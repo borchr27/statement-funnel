@@ -6,8 +6,8 @@ from enum import Enum, auto
 T = TypeVar("T")
 
 class TransactionType(Enum):
-	DEBIT = auto()
-	CREDIT = auto()
+	DEBIT = "Debit"
+	CREDIT = "Credit"
 
 	@classmethod
 	def from_string(cls, value):
@@ -25,7 +25,7 @@ class Transactions:
 
 @dataclass
 class Transaction:
-	trans_date: datetime
+	transaction_date: datetime
 	description: str
 
 @dataclass

@@ -11,18 +11,18 @@ def debit_convert(t: DebitTransaction) -> BudgetRecord:
 	description = t.description
 	amount = get_amount(t)
 	if 'ATM ' in description:
-		return BudgetRecord(cost=amount, date=t.trans_date, description='cash', account=account, tag=Tag.MISC)
+		return BudgetRecord(cost=amount, date=t.transaction_date, description='cash', account=account, tag=Tag.MISC)
 	elif ' VENMO ' in description:
-		print(f"{t.trans_date.strftime('%m/%d/%y')} -- {t.amount} -- {description}")
+		print(f"{t.transaction_date.strftime('%m/%d/%y')} -- {t.amount} -- {description}")
 		desc_info = input('\tEnter VENMO description: ')
 		description = desc_info if desc_info not in ['', None] else description
-		return BudgetRecord(cost=amount, date=t.trans_date, description=description, account=account, tag=Tag.MISC, )
+		return BudgetRecord(cost=amount, date=t.transaction_date, description=description, account=account, tag=Tag.MISC, )
 	else:
-		print(f"{t.trans_date.strftime('%m/%d/%y')} -- {t.amount} -- {description}")
+		print(f"{t.transaction_date.strftime('%m/%d/%y')} -- {t.amount} -- {description}")
 		desc_info = input('\tAdd description (click Enter to skip): ')
 		if desc_info not in ['', None]:
 			tag = determine_tag(t)
-			return BudgetRecord(date=t.trans_date, cost=amount, description=desc_info, tag=tag, account=account)
+			return BudgetRecord(date=t.transaction_date, cost=amount, description=desc_info, tag=tag, account=account)
 	return None
 
 def get_amount(t: T) -> float:
@@ -48,7 +48,7 @@ def credit_convert(t: CreditCardTransaction) -> BudgetRecord:
 def determine_tag(t: T) -> Tag:
 	"""Find tag for transaction based on description."""
 	if not isinstance(t, DebitTransaction): # other wise we show the info twice
-		print(f"{t.trans_date.strftime('%m/%d/%y')} -- {get_amount(t)} -- {t.description}")
+		print(f"{t.transaction_date.strftime('%m/%d/%y')} -- {get_amount(t)} -- {t.description}")
 	return get_tag()
 
 def get_tag() -> Tag:

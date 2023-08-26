@@ -2,7 +2,6 @@ import csv
 import os
 from typing import List
 from datetime import datetime
-from typing import List
 from program.transaction_class import Transactions, DebitTransaction, CreditCardTransaction
 from program.budget_class import Tag
 from program.constants import ACC_DEBIT, ACC_CREDITCARD, BUDGET_ITEMS
@@ -39,7 +38,7 @@ def import_data(file_names: List[str]) -> None:
 					amt = float(row['Transaction Amount'])
 					trans_type = row['Transaction Type']
 					balance = float(row['Balance'])
-					current_account.transactions.append(DebitTransaction(trans_date=trans_date, description=description, account_number=account_number, amount=amt, transaction_type=trans_type, balance=balance))
+					current_account.transactions.append(DebitTransaction(transaction_date=trans_date, description=description, account_number=account_number, amount=amt, transaction_type=trans_type, balance=balance))
 				else:
 					description = row['Description']
 					trans_date = datetime.strptime(row['Transaction Date'], '%Y-%m-%d')
@@ -48,7 +47,7 @@ def import_data(file_names: List[str]) -> None:
 					category = row['Category']
 					debit = float(row['Debit']) if row['Debit'] else 0.0
 					credit = float(row['Credit']) if row['Credit'] else 0.0
-					current_account.transactions.append(CreditCardTransaction(posted_date=posted_date, card_num=card_num, category=category, debit=debit, credit=credit, description=description, trans_date=trans_date))
+					current_account.transactions.append(CreditCardTransaction(posted_date=posted_date, card_num=card_num, category=category, debit=debit, credit=credit, description=description, transaction_date=trans_date))
 
 
 def format_data() -> None:
