@@ -2,7 +2,7 @@
 
 ## Description
 
-This is a personal project I've been wanting to do for a while where the input is bank statements for a checking, credit card, and potentially other account statements in csv format. The csv statements are then reformatted into a single format. This will allow for the data, now all in one place, to be analyzed and visualized.
+This is a personal project I've been wanting to do for a while where the input is bank statements for a checking, credit card, and potentially other account statements in csv format. The csv statements are then reformatted into a single format. This will allow for the data, now all in one place, to be analyzed and visualized. This project uses Python 3.9.17.
 
 ## Running the Code
 

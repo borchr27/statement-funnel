@@ -3,7 +3,7 @@ from program.utils import (
 	import_data, 
 	format_data,
 	review_data,
-	insert_data, 
+	insert_data_to_file, 
 	ACC_DEBIT, 
 	ACC_CREDITCARD
 )
@@ -23,7 +23,7 @@ def main():
 	import_data(file_names)
 	format_data()
 	review_data()
-	insert_data()
+	insert_data_to_file()
 
 if __name__ == "__main__":
 	main()
