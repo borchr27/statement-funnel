@@ -9,7 +9,6 @@ from program.helper_functions import debit_convert, credit_convert, get_tag, pri
 
 ACC_DEBIT = Transactions(transactions=[], origin_file_name="")
 ACC_CREDITCARD = Transactions(transactions=[], origin_file_name="")
-BUDGET_ITEMS = []
 
 def get_file_names() -> List[str]:
 	"""Get name of files located in the /data directory."""
@@ -20,6 +19,7 @@ def get_file_names() -> List[str]:
 
 def import_data(file_names: List[str]) -> None:
 	""""Import data from .csv files exported from bank website into defined classes."""
+	global ACC_DEBIT, ACC_CREDITCARD
 	for file_name in file_names:
 		if 'Checking' in file_name:
 			current_account = ACC_DEBIT
@@ -52,6 +52,7 @@ def import_data(file_names: List[str]) -> None:
 
 def format_data() -> None:
 	"""For each transaction in each account create a budget transaction item."""
+	global BUDGET_ITEMS, ACC_CREDITCARD, ACC_DEBIT
 	for account in [ACC_DEBIT, ACC_CREDITCARD]:
 		for transaction in account.transactions:
 			if isinstance(transaction, DebitTransaction):
@@ -67,6 +68,7 @@ def format_data() -> None:
 
 def review_data() -> None:
 	"""Display the budget items to the user for review and allow them to edit the items."""
+	global BUDGET_ITEMS
 	for n, item in enumerate(BUDGET_ITEMS):
 		if isinstance(item, BudgetRecord):
 			print(f'{n} \t {item.cost:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.tag.value} \t {item.account.value} \t {item.description}')
@@ -96,7 +98,9 @@ def review_data() -> None:
 
 def insert_data_to_file() -> None:
 	"""Insert budget items into budget.csv file."""
+	global BUDGET_ITEMS
 	# TODO: check if item exists, if not create it
+	BUDGET_ITEMS = sorted(BUDGET_ITEMS, key=lambda x: x.date)
 	for item in BUDGET_ITEMS:
 		if isinstance(item, BudgetRecord):
 			with open('./data/budget.csv', 'a') as file:

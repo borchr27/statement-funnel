@@ -9,7 +9,7 @@ def debit_convert(t: DebitTransaction) -> BudgetRecord:
 	"""Mainly want to handle venmo and atm withdrawls from this account. Review and label transactions manually."""
 	account = Account.CHECKING
 	description = t.description
-	amount = get_amount(t)
+	amount = -get_amount(t) # debit transactions are negative in the BudgetRecord file
 	if 'ATM ' in description:
 		return BudgetRecord(cost=amount, date=t.transaction_date, description='cash', account=account, tag=Tag.MISC)
 	elif ' VENMO ' in description:
