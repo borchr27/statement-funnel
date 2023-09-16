@@ -8,6 +8,7 @@ from program.utils import (
 	ACC_CREDITCARD
 )
 
+
 def debug():
 	print(ACC_DEBIT.origin_file_name)
 	for i in range(5):
@@ -16,14 +17,11 @@ def debug():
 	print(ACC_CREDITCARD.origin_file_name)
 	for i in range(5):
 		print('\t', ACC_CREDITCARD.transactions[i].description)
-	
 
-def main():
+
+if __name__ == "__main__":
 	file_names = get_file_names()
 	import_data(file_names)
 	format_data()
 	review_data()
 	insert_data_to_file()
-
-if __name__ == "__main__":
-	main()
