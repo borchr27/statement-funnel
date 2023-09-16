@@ -48,16 +48,16 @@ def credit_convert(t: CreditCardTransaction) -> BudgetRecord:
 def determine_tag(t: T) -> Tag:
 	"""Find tag for transaction based on description."""
 	if not isinstance(t, DebitTransaction): # other wise we show the info twice
-		print(f"{t.transaction_date.strftime('%m/%d/%y')} -- {get_amount(t)} -- {t.description}")
+		print(f"{t.transaction_date.strftime('%m/%d/%y')} -- {get_amount(t)} -- {t.category} -- {t.description}")
 	return get_tag()
 
 def get_tag() -> Tag:
 	"""Get tag from the user."""
+	tag_dict = {tag.value[0]: tag for tag in Tag}
 	while True:
-		value = input('\tEnter tag: ')
-		for tag in Tag:
-			if value in tag.value and value not in [None, '']:
-				return tag
+		user_tag = input('\tEnter tag: ')
+		if user_tag in tag_dict.keys() and user_tag not in [None, '']:
+			return tag_dict[user_tag]
 		else:
 			print_warning_message('Invalid tag, try again.')
 			
