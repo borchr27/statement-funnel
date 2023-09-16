@@ -1,6 +1,6 @@
 from program.transaction_class import DebitTransaction, CreditCardTransaction
 from program.budget_class import BudgetRecord, Account, Tag
-from typing import TypeVar, List
+from typing import TypeVar
 from program.constants import BANK_NAME
 
 T = TypeVar("T")
@@ -61,7 +61,6 @@ def get_tag() -> Tag:
 		else:
 			print_warning_message('Invalid tag, try again.')
 			
-
 def print_warning_message(message: str) -> None:
 	"""Display warning message in red to the user."""
 	print('\033[31m', end='')

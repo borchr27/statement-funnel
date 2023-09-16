@@ -3,7 +3,7 @@ import os
 from typing import List
 from datetime import datetime
 from program.transaction_class import Transactions, DebitTransaction, CreditCardTransaction
-from program.budget_class import Tag
+from program.budget_class import Tag, BudgetRecord
 from program.constants import ACC_DEBIT, ACC_CREDITCARD, BUDGET_ITEMS
 from program.helper_functions import debit_convert, credit_convert, get_tag, print_warning_message
 
@@ -68,7 +68,8 @@ def format_data() -> None:
 def review_data() -> None:
 	"""Display the budget items to the user for review and allow them to edit the items."""
 	for n, item in enumerate(BUDGET_ITEMS):
-		print(f'{n} \t {item.cost:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.tag.value} \t {item.account.value} \t {item.description}')
+		if isinstance(item, BudgetRecord):
+			print(f'{n} \t {item.cost:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.tag.value} \t {item.account.value} \t {item.description}')
 	while True:
 		item_number = input('Enter item number to edit (enter to continue): ')
 		if item_number in ['', None]:
@@ -97,9 +98,10 @@ def insert_data_to_file() -> None:
 	"""Insert budget items into budget.csv file."""
 	# TODO: check if item exists, if not create it
 	for item in BUDGET_ITEMS:
-		with open('./data/budget.csv', 'a') as file:
-			csv_writer = csv.writer(file)
-			csv_writer.writerow([item.date.strftime('%m/%d/%y'), item.cost, item.tag.value, item.description, item.account.value])
+		if isinstance(item, BudgetRecord):
+			with open('./data/budget.csv', 'a') as file:
+				csv_writer = csv.writer(file)
+				csv_writer.writerow([item.date.strftime('%m/%d/%y'), item.cost, item.tag.value, item.description, item.account.value])
 
 def insert_data_to_db() -> None:
 	"""Insert budget items into a database."""
