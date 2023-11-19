@@ -1,49 +1,31 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TypeVar, List
-from enum import Enum, auto
+from typing import TypeVar, List, Optional
+from program.constants import Account, Tag
+
 
 T = TypeVar("T")
 
-class TransactionType(Enum):
-	DEBIT = "Debit"
-	CREDIT = "Credit"
-
-	@classmethod
-	def from_string(cls, value):
-		if value.lower() == "debit":
-			return cls.DEBIT
-		elif value.lower() == "credit":
-			return cls.CREDIT
-		else:
-			raise ValueError(f"Unknown transaction type: {value}")
-
-@dataclass
-class Transactions:
-	transactions: List[T]
-	origin_file_name: str
 
 @dataclass
 class Transaction:
-	transaction_date: datetime
-	description: str
+    amount: float
+    bank: str
+    currency: str
+    date: datetime
+    description: str
+    account: Account
+    tag: Optional[Tag] = None
+
+    def __post_init__(self):
+        if isinstance(self.account, str):
+            try:
+                self.account = Account[self.account.upper()]  # Convert to uppercase for case-insensitive matching
+            except KeyError:
+                raise ValueError(f"No matching enum value for account: {self.account}")
+
 
 @dataclass
-class DebitTransaction(Transaction):
-	account_number: int
-	amount: float
-	transaction_type: TransactionType
-	balance: float 
-
-	def __post_init__(self):
-		if isinstance(self.transaction_type, str):
-			self.transaction_type = TransactionType.from_string(self.transaction_type)
-
-
-@dataclass
-class CreditCardTransaction(Transaction):
-	posted_date: datetime
-	card_num: int
-	category: str
-	debit: float
-	credit: float
+class AccountInformation:
+    origin_file_name: str
+    transactions: List[Transaction]

@@ -1,0 +1,4 @@
+Transaction Date;Booking Date;Account number;Account Name;Transaction Category;Accocunt Number;Name of Account;Transaction type;Message;Note;VS;KS;SS;Booked amount;Account Currency;Original Amount and Currency;Original Amount and Currency;Fee;Transaction ID;Note;Merchant;City
+"12.01.2020";"14.01.2020 07:03";"1234/0000";"John Smith";"Card Payment";"0123";"";"Card payment Pay";"store name; city; id";"store name; city; id";"";"1178";"";"-935,00";"CZK";"";"";"0,00";"12345678";"";"";""
+"12.01.2020";"12.01.2020 18:40";"1234/0000";"John Smith";"Payment";"0123/0000";"Friend";"Single payment";"sport";"futbol";"";"";"";"-70,00";"CZK";"";"";"0,00";"12345678";"";"";""
+"10.01.2020";"12.01.2020 08:01";"1234/0000";"John Smith";"Card Payment";"0123";"";"Card payment Pay";"store; city; id";"store; city; id";"";"1178";"";"-607,80";"CZK";"";"";"0,00";"12345678";"";"store";"city"
