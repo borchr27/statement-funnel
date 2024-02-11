@@ -39,15 +39,10 @@ def import_data(directory: str) -> None:
                     date = datetime.strptime(row[ap["Date"]], ap["Date Format"])
                     currency = row[ap["Currency"]] if "Currency" in ap else "USD"
                     bank = CONFIG["Accounts"][account_id]["Bank Name"]
-                    account = CONFIG["Accounts"][account_id]["Account Type"].replace(" ", "_")
-                    description = (
-                        f'{row[ap["Description"]]}'
-                        if "Transaction type" not in row
-                        else f'{row[ap["Description"]]} {row[ap["Transaction Type"]]}'
-                    )
-                    description = description.replace(";", "")
+                    account_name = CONFIG["Accounts"][account_id]["Account Type"].replace(" ", "_")
+                    description = row[ap["Description"]].replace(";", "")
 
-                    if "Amount" not in ap:
+                    if ap["Amount"] == "Credit/Debit":
                         debit = float(row["Debit"]) if row["Debit"] else 0.0
                         credit = float(row["Credit"]) if row["Credit"] else 0.0
                         amount = credit if credit != 0.0 else -debit
@@ -59,7 +54,12 @@ def import_data(directory: str) -> None:
 
                 current_account.transactions.append(
                     Transaction(
-                        description=description, date=date, amount=amount, currency=currency, bank=bank, account=account
+                        description=description,
+                        date=date,
+                        amount=amount,
+                        currency=currency,
+                        bank=bank,
+                        account=account_name,
                     )
                 )
         ALL_TRANSACTIONS[account_id] = current_account

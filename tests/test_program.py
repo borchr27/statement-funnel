@@ -8,7 +8,7 @@ class TestClass:
     def test_checking_transaction_import(self):
         """Test creating a checking transaction class from data."""
         directory = "./data/testing"
-        file = open(f"{directory}/Checking_test.csv", "w")
+        file = open(f"{directory}/test.csv", "w")
         file.write(
             "Account Number,Transaction Date,Transaction Amount,Transaction Type,Transaction Description,Balance\n"
         )
@@ -18,7 +18,7 @@ class TestClass:
             file.write(t)
         file.close()
         import_data(directory)
-        os.remove(f"{directory}/Checking_test.csv")
+        os.remove(f"{directory}/test.csv")
 
         for n, transaction in enumerate(transactions):
             s = transaction.replace("\n", "")  # string
