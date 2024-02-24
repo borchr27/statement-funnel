@@ -66,7 +66,7 @@ class TestClass:
             "m",
             "m",
             "0",
-            "m",
+            "f",
             "test_description",
             "y",
             "n",
@@ -90,6 +90,10 @@ class TestClass:
         import_data(WORK_DIR)
         format_data()
         review_data()
+        assert ALL_TRANSACTIONS[0].transactions[0].tag.value == "food"
+        assert ALL_TRANSACTIONS[0].transactions[1].tag.value == "misc"
+        with pytest.raises(IndexError):
+            var = ALL_TRANSACTIONS[0].transactions[2].tag.value
 
     def test_dotenv(self):
         """Test that the .env file is set up correctly."""
