@@ -5,15 +5,25 @@ from typing import List
 from datetime import datetime
 from program.transaction_class import AccountInformation, Transaction
 from program.constants import ALL_TRANSACTIONS, CONFIG, Tag
-from program.helper_functions import check_descriptions, get_tag, print_warning_message, print_info_message
+from program.helper_functions import (
+    check_descriptions,
+    get_tag,
+    print_warning_message,
+    print_info_message,
+)
 
 
 def get_file_names(directory: str = "./data") -> List[str]:
     """Get name of files located in the /data directory."""
     file_names = [
-        file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file)) and ".csv" in file
+        file
+        for file in os.listdir(directory)
+        if os.path.isfile(os.path.join(directory, file)) and ".csv" in file
     ]
-    file_names.remove("budget.csv")
+    try:
+        file_names.remove("budget.csv")
+    except ValueError:
+        pass
     return file_names
 
 
@@ -23,31 +33,37 @@ def import_data(directory: str) -> None:
     ALL_TRANSACTIONS.clear()
     for file_name in file_names:
         account_id = None
-        for config in CONFIG["Accounts"]:
-            if config["Keyword"] in file_name:
-                account_id = config["Id"]
+        for config in CONFIG["accounts"]:
+            if config["keyword"] in file_name:
+                account_id = config["id"]
                 break
         assert account_id is not None, f"No account id found for file: {file_name}"
         current_account = AccountInformation(file_name, [])
-        ap = CONFIG["Accounts"][account_id]["ORM Information"]  # account prefix
+        ap = CONFIG["accounts"][account_id]["ormInformation"]  # account prefix
 
-        with open(f"{directory}/{file_name}", "r", encoding="UTF-8", errors="replace") as file:
-            delimiter = ap["Delimiter"]
+        with open(
+            f"{directory}/{file_name}", "r", encoding="UTF-8", errors="replace"
+        ) as file:
+            delimiter = ap["delimiter"]
             csv_reader = csv.DictReader(file, delimiter=delimiter)
             for row in csv_reader:
                 try:
-                    date = datetime.strptime(row[ap["Date"]], ap["Date Format"])
-                    currency = row[ap["Currency"]] if "Currency" in ap else "USD"
-                    bank = CONFIG["Accounts"][account_id]["Bank Name"]
-                    account_name = CONFIG["Accounts"][account_id]["Account Type"].replace(" ", "_")
-                    description = row[ap["Description"]].replace(";", "")
+                    date = datetime.strptime(row[ap["date"]], ap["dateFormat"])
+                    currency = row[ap["currency"]] if "Currency" in ap else "USD"
+                    bank = CONFIG["accounts"][account_id]["bankName"]
+                    account_name = CONFIG["accounts"][account_id][
+                        "accountType"
+                    ].replace(" ", "_")
+                    description = row[ap["description"]].replace(";", "")
 
-                    if ap["Amount"] == "Credit/Debit":
+                    if ap["amount"] == "Credit/Debit":
                         debit = float(row["Debit"]) if row["Debit"] else 0.0
                         credit = float(row["Credit"]) if row["Credit"] else 0.0
                         amount = credit if credit != 0.0 else -debit
                     else:
-                        amount = float(row[ap["Amount"]].replace(",", ".").replace(" ", ""))
+                        amount = float(
+                            row[ap["amount"]].replace(",", ".").replace(" ", "")
+                        )
 
                 except ValueError:
                     print_warning_message(f"Error parsing row: {row}")
@@ -85,7 +101,7 @@ def show_all_transactions(transactions: list) -> None:
             )
 
 
-def edit_data() -> None:
+def review_data() -> None:
     """Display the budget items to the user for review and allow them to edit the items."""
     for account in ALL_TRANSACTIONS.keys():
         transactions = ALL_TRANSACTIONS[account].transactions
@@ -106,7 +122,9 @@ def edit_data() -> None:
                 )
                 tag = get_tag()
                 desc = input("\tEnter description: ")
-                response = input(f"Is item {item_number} correct? Type 'Y' to save or any character to discard.")
+                response = input(
+                    f"Is item {item_number} correct? Type 'Y' to save or any character to discard."
+                )
                 desc = desc if desc not in ["", None] else item.description
                 print(
                     f'{item.amount:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {tag.value} \t {item.account.value} \t {desc}'

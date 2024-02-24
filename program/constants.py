@@ -9,8 +9,8 @@ CONFIG = json.loads(os.environ.get("CONFIG"))
 ALL_TRANSACTIONS = {}
 
 ids = set()
-for config in CONFIG["Accounts"]:
-    id = config["Id"]
+for config in CONFIG["accounts"]:
+    id = config["id"]
     if id in ids:
         raise ValueError(f"Duplicate id: {id}")
     ids.add(id)
