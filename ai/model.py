@@ -55,5 +55,4 @@ class BertTextClassifier:
 
     @classmethod
     def load(cls, load_directory):
-        model = cls(num_labels=None, model_path=load_directory)  # num_labels is not needed when loading a pretrained model
-        return model
+        return cls(num_labels=None, model_path=load_directory)  # num_labels is not needed when loading a pretrained model
