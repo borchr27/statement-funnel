@@ -1,5 +1,6 @@
 import torch
-from transformers import BertTokenizer, BertForSequenceClassification, AdamW
+from transformers import BertTokenizer, BertForSequenceClassification
+from torch import optim
 
 
 class BertTextClassifier:
@@ -11,7 +12,7 @@ class BertTextClassifier:
             self.model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=num_labels)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
-        self.optimizer = AdamW(self.model.parameters(), lr=2e-5)
+        self.optimizer = optim.AdamW(self.model.parameters(), lr=2e-5)
         print(f'You are using {self.device}')
 
     def tokenize_data(self, texts):

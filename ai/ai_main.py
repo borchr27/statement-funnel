@@ -1,8 +1,20 @@
 from data_loader import load_data, preprocess_data, split_data, create_dataloaders
 from model import BertTextClassifier
 import os
+import argparse
 
-if __name__ == '__main__':
+
+def main():
+    parser = argparse.ArgumentParser(description="Process some flags.")
+    parser.add_argument('-r', '--rebuild', action='store_true', help='Rebuild the model from scratch.')
+
+    args = parser.parse_args()
+
+    if args.rebuild:
+        print("Rebuild flag is set!")
+    else:
+        print("Rebuild flag is not set.")
+
     save_directory = os.path.join(os.getcwd(), 'private/saved_model')
     file_path = os.path.join(os.getcwd(), 'private/Budget-9-text.csv')
 
@@ -13,19 +25,19 @@ if __name__ == '__main__':
 
     # Initialize model if you want to train from scratch else load it
     num_labels = len(label_to_id)
-    if os.path.exists('private/saved_model'):
-        model = BertTextClassifier.load('private/saved_model')
-    else:
+    if args.rebuild or not os.path.exists('private/saved_model'):
         model = BertTextClassifier(num_labels)
+    else:
+        model = BertTextClassifier.load('private/saved_model')
 
     # Create dataloaders
     train_dataloader, test_dataloader = create_dataloaders(
         train_texts, train_labels, test_texts, test_labels, model.tokenize_data
     )
 
-    if not os.path.exists('private/saved_model'):
+    if args.rebuild or not os.path.exists('private/saved_model'):
         # Train the model
-        model.train(train_dataloader)
+        model.train(train_dataloader, epochs=13)
 
         # Save the model
         model.save(save_directory)
@@ -34,3 +46,7 @@ if __name__ == '__main__':
     # Evaluate the model
     accuracy = model.evaluate(test_dataloader)
     print(f'Test Accuracy: {accuracy}')
+
+
+if __name__ == '__main__':
+    main()
