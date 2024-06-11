@@ -20,8 +20,8 @@ def main():
 
     # Load and preprocess data
     data = load_data(file_path)
-    texts, labels, label_to_id = preprocess_data(data)
-    train_texts, test_texts, train_labels, test_labels = split_data(texts, labels)
+    features, labels, label_to_id = preprocess_data(data)
+    train_texts, test_texts, train_labels, test_labels = split_data(features, labels)
 
     # Initialize model if you want to train from scratch else load it
     num_labels = len(label_to_id)
@@ -37,7 +37,7 @@ def main():
 
     if args.rebuild or not os.path.exists('private/saved_model'):
         # Train the model
-        model.train(train_dataloader, epochs=13)
+        model.train(train_dataloader, epochs=18)
 
         # Save the model
         model.save(save_directory)

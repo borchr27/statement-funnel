@@ -4,7 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 import torch
 
 
-class TextDataset(Dataset):
+class BudgetDataset(Dataset):
     def __init__(self, tokens, labels):
         self.tokens = tokens
         self.labels = labels
@@ -20,7 +20,7 @@ class TextDataset(Dataset):
 
 def load_data(file_path):
     data = pd.read_csv(file_path)
-    return data[['Description', 'Tag']]
+    return data[['Description', 'Amount', 'Tag']]
 
 
 def preprocess_data(data):
@@ -29,7 +29,9 @@ def preprocess_data(data):
     descriptions = data['Description'].tolist()
     # replace NaN values with empty strings
     descriptions = [desc if type(desc) == str else '' for desc in descriptions]
-    return descriptions, labels, label_to_id
+    amounts = data['Amount'].tolist()
+    features = [f'{amount} {desc}' for desc, amount in zip(descriptions, amounts)]
+    return features, labels, label_to_id
 
 
 def split_data(texts, labels, test_size=0.4):
@@ -41,8 +43,8 @@ def create_dataloaders(train_texts, train_labels, test_texts, test_labels, token
     train_tokens = tokenizer(train_texts)
     test_tokens = tokenizer(test_texts)
 
-    train_dataset = TextDataset(train_tokens, train_labels)
-    test_dataset = TextDataset(test_tokens, test_labels)
+    train_dataset = BudgetDataset(train_tokens, train_labels)
+    test_dataset = BudgetDataset(test_tokens, test_labels)
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
