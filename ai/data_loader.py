@@ -39,14 +39,16 @@ def split_data(texts, labels, test_size=0.4):
     return train_texts, test_texts, train_labels, test_labels
 
 
-def create_dataloaders(train_texts, train_labels, test_texts, test_labels, tokenizer, batch_size=16):
-    train_tokens = tokenizer(train_texts)
-    test_tokens = tokenizer(test_texts)
-
+def create_dataloaders(train_features, train_labels, test_features=None, test_labels=None, tokenizer=None, batch_size=16):
+    train_tokens = tokenizer(train_features)
     train_dataset = BudgetDataset(train_tokens, train_labels)
-    test_dataset = BudgetDataset(test_tokens, test_labels)
-
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    if test_features is not None or test_labels is not None:
+        test_tokens = tokenizer(test_features)
+        test_dataset = BudgetDataset(test_tokens, test_labels)
+        test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    else:
+        test_dataloader = None
 
     return train_dataloader, test_dataloader

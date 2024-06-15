@@ -7,7 +7,7 @@ T = TypeVar("T")
 
 
 def check_descriptions(t: Transaction):
-    """Mainly want to handle venmo and atm withdrawals. Then review and label transactions manually."""
+    """Mainly want to handle venmo and atm withdrawals and review/label transactions manually."""
     description = t.description
     if "ATM " in description:
         t.description = "cash"

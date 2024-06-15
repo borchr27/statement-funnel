@@ -81,7 +81,7 @@ def import_data(directory: str) -> None:
         ALL_TRANSACTIONS[account_id] = current_account
 
 
-def format_data() -> None:
+def format_and_tag_data() -> None:
     """For each transaction in each account create a budget transaction item."""
     for account in ALL_TRANSACTIONS.keys():
         transactions = ALL_TRANSACTIONS[account].transactions

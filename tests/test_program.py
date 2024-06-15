@@ -1,7 +1,7 @@
 from program.constants import ALL_TRANSACTIONS, CONFIG
 import os
 import sys
-from program.utils import import_data, format_data, review_data
+from program.utils import import_data, format_and_tag_data, review_data
 from datetime import datetime
 import pytest
 
@@ -54,7 +54,7 @@ class TestClass:
         sys.stdout = open(os.devnull, "w")
 
         import_data(WORK_DIR)
-        format_data()
+        format_and_tag_data()
         assert ALL_TRANSACTIONS[0].transactions[0].tag.value == "misc"
         assert ALL_TRANSACTIONS[0].transactions[1].tag.value == "misc"
         with pytest.raises(IndexError):
@@ -88,7 +88,7 @@ class TestClass:
         # Use monkeypatch.setattr to replace the input() function
         # with a function that returns values from the input_sequence
         import_data(WORK_DIR)
-        format_data()
+        format_and_tag_data()
         review_data()
         assert ALL_TRANSACTIONS[0].transactions[0].tag.value == "food"
         assert ALL_TRANSACTIONS[0].transactions[1].tag.value == "misc"

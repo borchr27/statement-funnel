@@ -1,6 +1,9 @@
 import torch
+from torch.utils.data import DataLoader
 from transformers import BertTokenizer, BertForSequenceClassification
 from torch import optim
+
+from ai.data_loader import BudgetDataset
 
 
 class BertTextClassifier:
@@ -15,9 +18,9 @@ class BertTextClassifier:
         self.optimizer = optim.AdamW(self.model.parameters(), lr=2e-5)
         print(f'You are using {self.device}')
 
-    def tokenize_data(self, texts):
+    def tokenize_data(self, features):
         return self.tokenizer(
-            texts,
+            features,
             padding=True,
             truncation=True,
             return_tensors='pt'
@@ -50,10 +53,20 @@ class BertTextClassifier:
                 total_samples += len(inputs['labels'])
         return total_correct / total_samples
 
+    def predict(self, features):
+        self.model.eval()
+        tokens = self.tokenize_data(features)
+        tokens = {key: val.to(self.device) for key, val in tokens.items()}
+        with torch.no_grad():
+            outputs = self.model(**tokens)
+        predictions = torch.argmax(outputs.logits, dim=-1)
+        return predictions.cpu().numpy()
+
     def save(self, save_directory):
         self.model.save_pretrained(save_directory)
         self.tokenizer.save_pretrained(save_directory)
 
     @classmethod
     def load(cls, load_directory):
-        return cls(num_labels=None, model_path=load_directory)  # num_labels is not needed when loading a pretrained model
+        # num_labels is not needed when loading a pretrained model
+        return cls(num_labels=None, model_path=load_directory)
