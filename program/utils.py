@@ -3,8 +3,10 @@ import csv
 import os
 from typing import List
 from datetime import datetime
+
+from ai.model import BertTextClassifier
 from program.transaction_class import AccountInformation, Transaction
-from program.constants import ALL_TRANSACTIONS, CONFIG, Tag
+from program.constants import ALL_TRANSACTIONS, CONFIG, NewTag
 from program.helper_functions import (
     check_descriptions,
     get_tag,
@@ -85,7 +87,12 @@ def format_and_tag_data() -> None:
     """For each transaction in each account create a budget transaction item."""
     for account in ALL_TRANSACTIONS.keys():
         transactions = ALL_TRANSACTIONS[account].transactions
-        for transaction in transactions:
+        features = [f'{t.amount} {t.description}' for t in transactions]
+        model = BertTextClassifier.load('private/saved_model')
+        predictions = model.predict(features)
+        assert len(transactions) == len(predictions), "Length mismatch between transactions and predictions."
+        for transaction, prediction in zip(transactions, predictions):
+            transaction.tag = NewTag(prediction)
             check_descriptions(transaction)
 
 
@@ -93,7 +100,7 @@ def show_all_transactions(transactions: list) -> None:
     for n, item in enumerate(transactions):
         if item.tag:
             print(
-                f'{n} \t {item.amount:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank} \t {item.account.value} \t {item.tag.value} \t {item.description}'
+                f'{n} \t {item.amount:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank} \t {item.account.value} \t {item.tag.name} \t {item.description}'
             )
         else:
             print_info_message(
@@ -131,7 +138,7 @@ def review_data() -> None:
                 )
 
                 if response.lower() == "y":
-                    item.tag = Tag(tag)
+                    item.tag = NewTag(tag)
                     item.description = desc
                 else:
                     print("Item discarded.")
@@ -156,7 +163,7 @@ def insert_data_to_file(directory: str) -> None:
                             item.bank,
                             item.account.value,
                             item.amount,
-                            item.tag.value,
+                            item.tag.name,
                             item.description,
                         ]
                     )

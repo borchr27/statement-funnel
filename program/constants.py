@@ -22,10 +22,11 @@ class Account(Enum):
     CHECKING = "Checking"
 
 
-class Tag(Enum):
-    FOOD = "food"
-    MISC = "misc"
-    RENT = "rent"
-    PAY = "pay"
-    GAS = "gas"
-    OUT = "out"
+
+class NewTag(Enum):
+    misc = 0
+    pay = 1
+    out = 2
+    gas = 3
+    food = 4
+    rent = 5

@@ -23,9 +23,11 @@ def load_data(file_path):
     return data[['Description', 'Amount', 'Tag']]
 
 
-def preprocess_data(data):
-    label_to_id = {label: idx for idx, label in enumerate(data['Tag'].unique())}
-    labels = [label_to_id[label] for label in data['Tag']]
+def preprocess_data(data, is_prediction_data=False):
+    labels, label_to_id = None, None
+    if not is_prediction_data:
+        label_to_id = {label: idx for idx, label in enumerate(data['Tag'].unique())}
+        labels = [label_to_id[label] for label in data['Tag']]
     descriptions = data['Description'].tolist()
     # replace NaN values with empty strings
     descriptions = [desc if type(desc) == str else '' for desc in descriptions]

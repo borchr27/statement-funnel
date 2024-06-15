@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TypeVar, List, Optional
-from program.constants import Account, Tag
+from program.constants import Account, NewTag
 
 
 T = TypeVar("T")
@@ -15,7 +15,7 @@ class Transaction:
     date: datetime
     description: str
     account: Account
-    tag: Optional[Tag] = None
+    tag: Optional[NewTag] = None
 
     def __post_init__(self):
         if isinstance(self.account, str):

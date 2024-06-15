@@ -2,14 +2,15 @@ from data_loader import load_data, preprocess_data, split_data, create_dataloade
 from model import BertTextClassifier
 import os
 import argparse
+from program.constants import NewTag
+
+parser = argparse.ArgumentParser(description="Process some flags.")
+parser.add_argument('-b', '--build', action='store_true', help='Rebuild the model from scratch.')
+parser.add_argument('-p', '--predict', action='store_true', help='Predict the label of the data.')
+args = parser.parse_args()
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Process some flags.")
-    parser.add_argument('-b', '--build', action='store_true', help='Rebuild the model from scratch.')
-    parser.add_argument('-p', '--predict', action='store_true', help='Predict the label of the data.')
-    args = parser.parse_args()
-
     save_directory = os.path.join(os.getcwd(), 'private/saved_model')
     file_path = os.path.join(os.getcwd(), 'private/Budget-9-text.csv')
 
@@ -18,7 +19,12 @@ def main():
     features, labels, label_to_id = preprocess_data(data)
     train_features, test_features, train_labels, test_labels = split_data(features, labels)
 
-    # Initialize model if you want to train from scratch else load it
+    for tag, label in zip(NewTag, label_to_id.items()):
+        assert tag.name == label[0], f"Tag name mismatch: {tag.name} != {label[0]}"
+        assert tag.value == label[1], f"Tag value mismatch: {tag.value} != {label[1]}"
+    print("Tags are matched.")
+
+    # Initialize model if you want to train from scratch else load the model
     num_labels = len(label_to_id)
     if args.build:
         model = BertTextClassifier(num_labels)

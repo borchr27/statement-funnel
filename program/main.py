@@ -1,12 +1,10 @@
 import signal
-import sys
 from program.utils import (
     import_data,
     format_and_tag_data,
     review_data,
     insert_data_to_file,
     signal_handler,
-    cleanup,
 )
 
 # Register the Ctrl+C (SIGINT) signal handler

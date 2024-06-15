@@ -1,5 +1,5 @@
 from program.transaction_class import Transaction
-from program.transaction_class import Tag
+from program.transaction_class import NewTag
 from typing import TypeVar
 from program.constants import CONFIG
 
@@ -11,11 +11,13 @@ def check_descriptions(t: Transaction):
     description = t.description
     if "ATM " in description:
         t.description = "cash"
-        t.tag = Tag.MISC
+        t.tag = NewTag.misc
         return
 
     if " VENMO " in description:
-        t.tag = determine_tag(t)
+        if t.tag is None:
+            t.tag = determine_tag(t)
+        print(t.date.strftime("%m/%d/%y"), "--", t.amount, "--", t.description)
         desc_info = input("\tEnter VENMO description: ")
         t.description = f"VENMO: {desc_info}"
         return
@@ -25,22 +27,23 @@ def check_descriptions(t: Transaction):
         if keyword in description:
             return
 
-    t.tag = determine_tag(t)
+    if t.tag is None:
+        t.tag = determine_tag(t)
     if description in ["", None]:
         desc_info = input("\tAdd description (click Enter to skip): ")
         t.description = desc_info
     return
 
 
-def determine_tag(t: Transaction) -> Tag:
+def determine_tag(t: Transaction) -> NewTag:
     """Find tag for transaction based on description."""
     print(f"{t.date.strftime('%m/%d/%y')} -- {t.amount} -- {t.description}")
     return get_tag()
 
 
-def get_tag() -> Tag:
+def get_tag() -> NewTag:
     """Get tag from the user. User only needs to enter first letter."""
-    tag_dict = {tag.value[0]: tag for tag in Tag}
+    tag_dict = {tag.name[0]: tag for tag in NewTag}
     while True:
         user_tag = input("\tEnter tag: ")
         if user_tag in tag_dict.keys() and user_tag not in [None, ""]:

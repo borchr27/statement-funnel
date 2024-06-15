@@ -1,9 +1,6 @@
 import torch
-from torch.utils.data import DataLoader
 from transformers import BertTokenizer, BertForSequenceClassification
 from torch import optim
-
-from ai.data_loader import BudgetDataset
 
 
 class BertTextClassifier:
@@ -16,7 +13,6 @@ class BertTextClassifier:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
         self.optimizer = optim.AdamW(self.model.parameters(), lr=2e-5)
-        print(f'You are using {self.device}')
 
     def tokenize_data(self, features):
         return self.tokenizer(
@@ -27,6 +23,7 @@ class BertTextClassifier:
         )
 
     def train(self, train_dataloader, epochs=3):
+        print(f'You are using {self.device}')
         self.model.train()
         for epoch in range(epochs):
             total_loss = 0

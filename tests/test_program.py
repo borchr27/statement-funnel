@@ -55,10 +55,10 @@ class TestClass:
 
         import_data(WORK_DIR)
         format_and_tag_data()
-        assert ALL_TRANSACTIONS[0].transactions[0].tag.value == "misc"
-        assert ALL_TRANSACTIONS[0].transactions[1].tag.value == "misc"
+        assert ALL_TRANSACTIONS[0].transactions[0].tag.name == "misc"
+        assert ALL_TRANSACTIONS[0].transactions[1].tag.name == "misc"
         with pytest.raises(IndexError):
-            var = ALL_TRANSACTIONS[0].transactions[2].tag.value
+            var = ALL_TRANSACTIONS[0].transactions[2].tag.name
 
     def test_review_data(self, setup_function, monkeypatch):
         # Define an input value
@@ -90,10 +90,10 @@ class TestClass:
         import_data(WORK_DIR)
         format_and_tag_data()
         review_data()
-        assert ALL_TRANSACTIONS[0].transactions[0].tag.value == "food"
-        assert ALL_TRANSACTIONS[0].transactions[1].tag.value == "misc"
+        assert ALL_TRANSACTIONS[0].transactions[0].tag.name == "food"
+        assert ALL_TRANSACTIONS[0].transactions[1].tag.name == "misc"
         with pytest.raises(IndexError):
-            var = ALL_TRANSACTIONS[0].transactions[2].tag.value
+            var = ALL_TRANSACTIONS[0].transactions[2].tag.name
 
     def test_dotenv(self):
         """Test that the .env file is set up correctly."""
