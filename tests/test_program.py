@@ -97,7 +97,7 @@ class TestClass:
 
     def test_dotenv(self):
         """Test that the .env file is set up correctly."""
-        assert isinstance(CONFIG["accounts"][0]["bankName"], str)
+        assert isinstance(CONFIG.accounts[0]["bankName"], str)
 
     def test_insert_data(self):
         """Insert data into a file test."""

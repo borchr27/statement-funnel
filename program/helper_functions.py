@@ -22,7 +22,7 @@ def check_descriptions(t: Transaction):
         t.description = f"VENMO: {desc_info}"
         return
 
-    keywords = CONFIG["globalKeywords"]
+    keywords = CONFIG.globalKeywords
     for keyword in keywords:
         if keyword in description:
             return

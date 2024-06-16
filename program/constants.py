@@ -1,26 +1,13 @@
-import os
-from dotenv import load_dotenv
-from enum import Enum, auto
+from enum import Enum
 import json
 
-load_dotenv()
-
-CONFIG = json.loads(os.environ.get("CONFIG"))
 ALL_TRANSACTIONS = {}
-
-ids = set()
-for config in CONFIG["accounts"]:
-    id = config["id"]
-    if id in ids:
-        raise ValueError(f"Duplicate id: {id}")
-    ids.add(id)
 
 
 class Account(Enum):
     CREDIT_CARD = "Credit Card"
     SAVINGS = "Savings"
     CHECKING = "Checking"
-
 
 
 class NewTag(Enum):
@@ -30,3 +17,21 @@ class NewTag(Enum):
     gas = 3
     food = 4
     rent = 5
+
+
+class Config:
+    def __init__(self, config_data):
+        for key, value in config_data.items():
+            setattr(self, key, value)
+
+
+# Load the configuration file
+with open('.env', 'r') as config_file:
+    config_data = json.load(config_file)
+
+# Create a Config instance
+CONFIG = Config(config_data)
+
+ids = set()
+for n in range(len(CONFIG.accounts)):
+    ids.add(CONFIG.accounts[n]['id'])

@@ -1,21 +1,22 @@
-CONFIG = {
-  "Accounts": [
-    {
-      "Id": 0,
-      "Bank Name": "Test Bank",
-      "ORM Information": {
-        "Description": "Transaction Description",
-        "Date": "Transaction Date",
-        "Date Format": "%m/%d/%y",
-        "Amount": "Transaction Amount",
-        "Transaction Type": "Transaction Type",
-        "Delimiter": ","
-      },
-      "Account Type": "Savings",
-      "Keyword": "test"
-    },
-  ],
-  "Keywords": [
-    "BANK NAME MOBILE PMT",
-  ]
+{
+    "accounts": [
+        {
+            "id": 0,
+            "bankName": "Test Bank",
+            "ormInformation": {
+                "description": "Transaction Description",
+                "date": "Transaction Date",
+                "dateFormat": "%m/%d/%y",
+                "amount": "Transaction Amount",
+                "transactionType": "Transaction Type",
+                "delimiter": ","
+            },
+            "accountType": "Savings",
+            "keyword": "test"
+        },
+    ],
+    "globalKeywords": [
+        "",
+    ],
+    "exchangeRateApiKey": ""
 }

@@ -3,7 +3,7 @@ import csv
 import os
 from typing import List
 from datetime import datetime
-
+import requests
 from ai.model import BertTextClassifier
 from program.transaction_class import AccountInformation, Transaction
 from program.constants import ALL_TRANSACTIONS, CONFIG, NewTag
@@ -35,13 +35,13 @@ def import_data(directory: str) -> None:
     ALL_TRANSACTIONS.clear()
     for file_name in file_names:
         account_id = None
-        for config in CONFIG["accounts"]:
+        for config in CONFIG.accounts:
             if config["keyword"] in file_name:
                 account_id = config["id"]
                 break
         assert account_id is not None, f"No account id found for file: {file_name}"
         current_account = AccountInformation(file_name, [])
-        ap = CONFIG["accounts"][account_id]["ormInformation"]  # account prefix
+        ap = CONFIG.accounts[account_id]["ormInformation"]  # account prefix
 
         with open(
             f"{directory}/{file_name}", "r", encoding="UTF-8", errors="replace"
@@ -52,8 +52,8 @@ def import_data(directory: str) -> None:
                 try:
                     date = datetime.strptime(row[ap["date"]], ap["dateFormat"])
                     currency = row[ap["currency"]] if "Currency" in ap else "USD"
-                    bank = CONFIG["accounts"][account_id]["bankName"]
-                    account_name = CONFIG["accounts"][account_id][
+                    bank = CONFIG.accounts[account_id]["bankName"]
+                    account_name = CONFIG.accounts[account_id][
                         "accountType"
                     ].replace(" ", "_")
                     description = row[ap["description"]].replace(";", "")
@@ -167,6 +167,19 @@ def insert_data_to_file(directory: str) -> None:
                             item.description,
                         ]
                     )
+
+
+def get_exchange_rates(currency: str = 'CZK') -> dict:
+    # Replace 'your_api_key' with your actual API key
+    url = f'https://v6.exchangerate-api.com/v6/{CONFIG.exchangeRateApiKey}/latest/USD'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        exchange_rates = data.get('conversion_rates', {})
+        rate = exchange_rates.get(currency)
+        return rate
+    else:
+        print(f"Error: Unable to fetch data (status code: {response.status_code})")
 
 
 def cleanup():
