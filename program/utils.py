@@ -57,6 +57,8 @@ def import_data(directory: str) -> None:
                         "accountType"
                     ].replace(" ", "_")
                     description = row[ap["description"]].replace(";", "")
+                    if description == '':
+                        description = row[ap["secondaryDescriptionKeyword"]] + " " + row[ap["tertiaryDescriptionKeyword"]]
 
                     if ap["amount"] == "Credit/Debit":
                         debit = float(row["Debit"]) if row["Debit"] else 0.0
@@ -68,7 +70,7 @@ def import_data(directory: str) -> None:
                         )
 
                 except ValueError:
-                    print_warning_message(f"Error parsing row: {row}")
+                    print_warning_message(f"Error parsing row: {row} in file: {file_name}")
 
                 current_account.transactions.append(
                     Transaction(

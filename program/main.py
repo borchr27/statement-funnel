@@ -13,7 +13,9 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def main():
     try:
-        working_directory = "./data/examples/"
+        # for testing
+        # working_directory = "./data/examples/"
+        working_directory = "./private/"
         import_data(working_directory)
         format_and_tag_data()
         review_data()

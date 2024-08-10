@@ -1,4 +1,4 @@
-# Python 3.10 with Conda
+# Python 3.10
 black             == 24.2.0
 click             == 8.1.7
 exceptiongroup    == 1.2.0

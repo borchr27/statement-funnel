@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 def main():
     save_directory = os.path.join(os.getcwd(), 'private/saved_model')
-    file_path = os.path.join(os.getcwd(), 'private/Budget-9-text.csv')
+    file_path = os.path.join(os.getcwd(), 'private/budget.csv')
 
     # Load and preprocess data
     data = load_data(file_path)

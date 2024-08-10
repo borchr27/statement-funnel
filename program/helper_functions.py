@@ -30,6 +30,7 @@ def check_descriptions(t: Transaction):
     if t.tag is None:
         t.tag = determine_tag(t)
     if description in ["", None]:
+        print(t.date.strftime("%m/%d/%y"), "--", t.amount, "--", t.bank, "--", t.tag.name)
         desc_info = input("\tAdd description (click Enter to skip): ")
         t.description = desc_info
     return
