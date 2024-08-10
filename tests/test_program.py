@@ -95,8 +95,8 @@ class TestClass:
         with pytest.raises(IndexError):
             var = ALL_TRANSACTIONS[0].transactions[2].tag.name
 
-    def test_dotenv(self):
-        """Test that the .env file is set up correctly."""
+    def test_env_file(self):
+        """Test that the .env.json file is set up correctly."""
         assert isinstance(CONFIG.accounts[0]["bankName"], str)
 
     def test_insert_data(self):

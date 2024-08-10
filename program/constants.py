@@ -26,7 +26,7 @@ class Config:
 
 
 # Load the configuration file
-with open('.env', 'r') as config_file:
+with open('.env.json', 'r') as config_file:
     config_data = json.load(config_file)
 
 # Create a Config instance
