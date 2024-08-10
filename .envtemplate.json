@@ -13,10 +13,10 @@
             },
             "accountType": "Savings",
             "keyword": "test"
-        },
+        }
     ],
     "globalKeywords": [
-        "",
+        ""
     ],
     "exchangeRateApiKey": ""
 }
