@@ -1,6 +1,6 @@
 Account Number,Transaction Date,Transaction Amount,Transaction Type,Transaction Description,Balance
-1234,08/25/23,-5.00,Debit,Withdrawal from BANK NAME MOBILE PYMT (can skip this),805.20
+1234,08/25/23,5.00,Debit,Withdrawal from BANK NAME MOBILE PYMT (can skip this),805.20
 1234,08/15/23,10.00,Credit,Deposit from VENMO CASHOUT,810.20
-1234,08/10/23,-50.00,Debit,ATM Withdrawal,806.20
+1234,08/10/23,50.00,Debit,ATM Withdrawal,806.20
 1234,08/05/23,30.00,Credit,Deposit from VENMO CASHOUT,856.20
-1234,08/01/23,-20.00,Debit,Withdrawal from VENMO PAYMENT,826.20
+1234,08/01/23,20.00,Debit,Withdrawal from VENMO PAYMENT,826.20

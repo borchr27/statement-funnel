@@ -8,7 +8,7 @@ from ai.model import BertTextClassifier
 from program.transaction_class import AccountInformation, Transaction
 from program.constants import ALL_TRANSACTIONS, CONFIG, NewTag
 from program.helper_functions import (
-    check_descriptions,
+    check_description,
     get_tag,
     print_warning_message,
     print_info_message,
@@ -44,10 +44,13 @@ def import_data(directory: str) -> None:
         ap = CONFIG.accounts[account_id]["ormInformation"]  # account prefix
 
         with open(
-            f"{directory}/{file_name}", "r", encoding="UTF-8", errors="replace"
+                f"{directory}/{file_name}", "r", encoding="UTF-8", errors="replace"
         ) as file:
             delimiter = ap["delimiter"]
             csv_reader = csv.DictReader(file, delimiter=delimiter)
+
+            check_for_duplicate_column_names(csv_reader)
+
             for row in csv_reader:
                 try:
                     date = datetime.strptime(row[ap["date"]], ap["dateFormat"])
@@ -56,21 +59,27 @@ def import_data(directory: str) -> None:
                     account_name = CONFIG.accounts[account_id][
                         "accountType"
                     ].replace(" ", "_")
-                    description = row[ap["description"]].replace(";", "")
-                    if description == '':
-                        description = row[ap["secondaryDescriptionKeyword"]] + " " + row[ap["tertiaryDescriptionKeyword"]]
 
-                    if ap["amount"] == "Credit/Debit":
+                    description = row[ap["description"]].replace(";", "")
+                    if description in ["", None]:
+                        description = row[ap["secondDescription"]] + " " + row[ap["thirdDescription"]] + " " + row[
+                            ap["fourthDescription"]]
+                    description = description.strip()
+
+                    # TODO fix this -_-
+                    if ap["amount"] == "Credit/Debit":  # For account id 2
                         debit = float(row["Debit"]) if row["Debit"] else 0.0
                         credit = float(row["Credit"]) if row["Credit"] else 0.0
                         amount = credit if credit != 0.0 else -debit
+                    if ap["amount"] == "Transaction Amount":  # For account id 1
+                        amount = float(row[ap["amount"]]) if row[ap["transactionType"]] == "Credit" else -float(row[ap["amount"]])
                     else:
                         amount = float(
                             row[ap["amount"]].replace(",", ".").replace(" ", "")
                         )
 
                 except ValueError:
-                    print_warning_message(f"Error parsing row: {row} in file: {file_name}")
+                    print_warning_message(f"Error parsing row: {row} in file: {file_name}.")
 
                 current_account.transactions.append(
                     Transaction(
@@ -95,7 +104,7 @@ def format_and_tag_data() -> None:
         assert len(transactions) == len(predictions), "Length mismatch between transactions and predictions."
         for transaction, prediction in zip(transactions, predictions):
             transaction.tag = NewTag(prediction)
-            check_descriptions(transaction)
+            check_description(transaction)
 
 
 def show_all_transactions(transactions: list) -> None:
@@ -116,7 +125,7 @@ def review_data() -> None:
         transactions = ALL_TRANSACTIONS[account].transactions
         show_all_transactions(transactions)
         while True:
-            item_number = input("Enter item number to edit (enter to continue): ")
+            item_number = input("Enter item number to edit (enter to continue): ").strip()
             if item_number in ["", None]:
                 break
             else:
@@ -169,6 +178,14 @@ def insert_data_to_file(directory: str) -> None:
                             item.description,
                         ]
                     )
+
+
+def check_for_duplicate_column_names(csv_reader: csv.DictReader) -> None:
+    """Check for duplicate column names in the CSV file."""
+    column_names = csv_reader.fieldnames
+    duplicates = [column for column in set(column_names) if column_names.count(column) > 1]
+    if duplicates:
+        raise ValueError(f"Duplicate column names found: {duplicates}")
 
 
 def get_exchange_rates(currency: str = 'CZK') -> dict:

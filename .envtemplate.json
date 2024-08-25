@@ -5,8 +5,9 @@
             "bankName": "Test Bank",
             "ormInformation": {
                 "description": "Transaction Description",
-                "secondaryDescriptionKeyword": "Date",
-                "tertiaryDescriptionKeyword": "Date",
+                "secondDescription": "Date",
+                "thirdDescription": "Date",
+                "fourthDescription": "Date",
                 "date": "Transaction Date",
                 "dateFormat": "%m/%d/%y",
                 "amount": "Transaction Amount",

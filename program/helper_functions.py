@@ -6,7 +6,7 @@ from program.constants import CONFIG
 T = TypeVar("T")
 
 
-def check_descriptions(t: Transaction):
+def check_description(t: Transaction):
     """Mainly want to handle venmo and atm withdrawals and review/label transactions manually."""
     description = t.description
     if "ATM " in description:
@@ -24,7 +24,8 @@ def check_descriptions(t: Transaction):
 
     keywords = CONFIG.globalKeywords
     for keyword in keywords:
-        if keyword in description:
+        if keyword == description or keyword in description:
+            t.tag = None
             return
 
     if t.tag is None:
