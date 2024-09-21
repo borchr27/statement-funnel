@@ -6,15 +6,17 @@ from program.constants import Account, NewTag
 
 T = TypeVar("T")
 
+# date,bank,account,amount_account_currency,tag,description,amount_usd,account_currency
 
 @dataclass
 class Transaction:
-    amount: float
-    bank: str
-    currency: str
+    account: Account
+    account_currency: str
+    amount_account_currency: float
+    amount_usd: float
+    bank_name: str
     date: datetime
     description: str
-    account: Account
     tag: Optional[NewTag] = None
 
     def __post_init__(self):

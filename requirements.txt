@@ -1,5 +1,5 @@
 # Python 3.10
-black             == 24.2.0
+black             == 24.3.0
 click             == 8.1.7
 exceptiongroup    == 1.2.0
 iniconfig         == 2.0.0

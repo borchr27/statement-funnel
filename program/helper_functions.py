@@ -17,7 +17,7 @@ def check_description(t: Transaction):
     if " VENMO " in description:
         if t.tag is None:
             t.tag = determine_tag(t)
-        print(t.date.strftime("%m/%d/%y"), "--", t.amount, "--", t.description)
+        print(t.date.strftime("%m/%d/%y"), "--", t.amount_account_currency, "--", t.description)
         desc_info = input("\tEnter VENMO description: ")
         t.description = f"VENMO: {desc_info}"
         return
@@ -31,7 +31,7 @@ def check_description(t: Transaction):
     if t.tag is None:
         t.tag = determine_tag(t)
     if description in ["", None]:
-        print(t.date.strftime("%m/%d/%y"), "--", t.amount, "--", t.bank, "--", t.tag.name)
+        print(t.date.strftime("%m/%d/%y"), "--", t.amount_account_currency, "--", t.bank_name, "--", t.tag.name)
         desc_info = input("\tAdd description (click Enter to skip): ")
         t.description = desc_info
     return
@@ -39,7 +39,7 @@ def check_description(t: Transaction):
 
 def determine_tag(t: Transaction) -> NewTag:
     """Find tag for transaction based on description."""
-    print(f"{t.date.strftime('%m/%d/%y')} -- {t.amount} -- {t.description}")
+    print(f"{t.date.strftime('%m/%d/%y')} -- {t.amount_account_currency} -- {t.description}")
     return get_tag()
 
 

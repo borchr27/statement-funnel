@@ -18,9 +18,7 @@ from program.helper_functions import (
 def get_file_names(directory: str = "./data") -> List[str]:
     """Get name of files located in the /data directory."""
     file_names = [
-        file
-        for file in os.listdir(directory)
-        if os.path.isfile(os.path.join(directory, file)) and ".csv" in file
+        file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file)) and ".csv" in file
     ]
     try:
         file_names.remove("budget.csv")
@@ -43,9 +41,7 @@ def import_data(directory: str) -> None:
         current_account = AccountInformation(file_name, [])
         ap = CONFIG.accounts[account_id]["ormInformation"]  # account prefix
 
-        with open(
-                f"{directory}/{file_name}", "r", encoding="UTF-8", errors="replace"
-        ) as file:
+        with open(f"{directory}/{file_name}", "r", encoding="UTF-8", errors="replace") as file:
             delimiter = ap["delimiter"]
             csv_reader = csv.DictReader(file, delimiter=delimiter)
 
@@ -54,16 +50,19 @@ def import_data(directory: str) -> None:
             for row in csv_reader:
                 try:
                     date = datetime.strptime(row[ap["date"]], ap["dateFormat"])
-                    currency = row[ap["currency"]] if "Currency" in ap else "USD"
+                    currency_code = ap["currencyCode"]
                     bank = CONFIG.accounts[account_id]["bankName"]
-                    account_name = CONFIG.accounts[account_id][
-                        "accountType"
-                    ].replace(" ", "_")
+                    account_name = CONFIG.accounts[account_id]["accountType"].replace(" ", "_")
 
                     description = row[ap["description"]].replace(";", "")
                     if description in ["", None]:
-                        description = row[ap["secondDescription"]] + " " + row[ap["thirdDescription"]] + " " + row[
-                            ap["fourthDescription"]]
+                        description = (
+                            row[ap["secondDescription"]]
+                            + " "
+                            + row[ap["thirdDescription"]]
+                            + " "
+                            + row[ap["fourthDescription"]]
+                        )
                     description = description.strip()
 
                     # TODO fix this -_-
@@ -72,11 +71,13 @@ def import_data(directory: str) -> None:
                         credit = float(row["Credit"]) if row["Credit"] else 0.0
                         amount = credit if credit != 0.0 else -debit
                     if ap["amount"] == "Transaction Amount":  # For account id 1
-                        amount = float(row[ap["amount"]]) if row[ap["transactionType"]] == "Credit" else -float(row[ap["amount"]])
-                    else:
-                        amount = float(
-                            row[ap["amount"]].replace(",", ".").replace(" ", "")
+                        amount = (
+                            float(row[ap["amount"]])
+                            if row[ap["transactionType"]] == "Credit"
+                            else -float(row[ap["amount"]])
                         )
+                    else:
+                        amount = float(row[ap["amount"]].replace(",", ".").replace(" ", ""))
 
                 except ValueError:
                     print_warning_message(f"Error parsing row: {row} in file: {file_name}.")
@@ -85,10 +86,11 @@ def import_data(directory: str) -> None:
                     Transaction(
                         description=description,
                         date=date,
-                        amount=amount,
-                        currency=currency,
-                        bank=bank,
+                        amount_account_currency=amount,
+                        account_currency=currency_code,
+                        bank_name=bank,
                         account=account_name,
+                        amount_usd=round(amount / get_exchange_rate(currency_code), 2),
                     )
                 )
         ALL_TRANSACTIONS[account_id] = current_account
@@ -98,8 +100,8 @@ def format_and_tag_data() -> None:
     """For each transaction in each account create a budget transaction item."""
     for account in ALL_TRANSACTIONS.keys():
         transactions = ALL_TRANSACTIONS[account].transactions
-        features = [f'{t.amount} {t.description}' for t in transactions]
-        model = BertTextClassifier.load('private/saved_model')
+        features = [f"{t.amount_account_currency} {t.description}" for t in transactions]
+        model = BertTextClassifier.load("private/saved_model")
         predictions = model.predict(features)
         assert len(transactions) == len(predictions), "Length mismatch between transactions and predictions."
         for transaction, prediction in zip(transactions, predictions):
@@ -111,11 +113,11 @@ def show_all_transactions(transactions: list) -> None:
     for n, item in enumerate(transactions):
         if item.tag:
             print(
-                f'{n} \t {item.amount:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank} \t {item.account.value} \t {item.tag.name} \t {item.description}'
+                f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t {item.tag.name} \t {item.description}'
             )
         else:
             print_info_message(
-                f'{n} \t {item.amount:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank} \t {item.account.value} \t NULL \t {item.description}'
+                f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t NULL \t {item.description}'
             )
 
 
@@ -136,16 +138,14 @@ def review_data() -> None:
                     continue
                 item = transactions[item_number]
                 print(
-                    f'{item.amount:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.tag.value} \t {item.account.value} \t {item.description}'
+                    f'{item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.tag.value} \t {item.account.value} \t {item.description}'
                 )
                 tag = get_tag()
                 desc = input("\tEnter description: ")
-                response = input(
-                    f"Is item {item_number} correct? Type 'Y' to save or any character to discard."
-                )
+                response = input(f"Is item {item_number} correct? Type 'Y' to save or any character to discard.")
                 desc = desc if desc not in ["", None] else item.description
                 print(
-                    f'{item.amount:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {tag.value} \t {item.account.value} \t {desc}'
+                    f'{item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {tag.value} \t {item.account.value} \t {desc}'
                 )
 
                 if response.lower() == "y":
@@ -171,9 +171,11 @@ def insert_data_to_file(directory: str) -> None:
                     csv_writer.writerow(
                         [
                             item.date.strftime("%Y-%m-%d"),
-                            item.bank,
+                            item.bank_name,
                             item.account.value,
-                            item.amount,
+                            item.amount_account_currency,
+                            item.account_currency,
+                            item.amount_usd,
                             item.tag.name,
                             item.description,
                         ]
@@ -188,17 +190,38 @@ def check_for_duplicate_column_names(csv_reader: csv.DictReader) -> None:
         raise ValueError(f"Duplicate column names found: {duplicates}")
 
 
-def get_exchange_rates(currency: str = 'CZK') -> dict:
-    # Replace 'your_api_key' with your actual API key
-    url = f'https://v6.exchangerate-api.com/v6/{CONFIG.exchangeRateApiKey}/latest/USD'
+def get_exchange_rate(currency: str = "CZK", is_test: bool = False) -> float:
+    """Check if the currency is in the exchange_usd_rate_history.log file and is not older than x days."""
+    days = 3 if is_test else 1
+    try:
+        with open("exchange_usd_rate_history.log", "r") as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                if row[1] == currency:
+                    date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
+                    if (datetime.now() - date).days < days:
+                        return float(row[2])
+    except FileNotFoundError:
+        pass  # File does not exist, we will create it later
+
+    # If the exchange rate is not found or is too old, fetch it from the API
+    url = f"https://v6.exchangerate-api.com/v6/{CONFIG.exchangeRateApiKey}/latest/USD"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
-        exchange_rates = data.get('conversion_rates', {})
+        exchange_rates = data.get("conversion_rates", {})
         rate = exchange_rates.get(currency)
-        return rate
+        if rate is None:
+            raise ValueError(f"Exchange rate for currency {currency} not found.")
+
+        # Append new data to the file
+        with open("exchange_usd_rate_history.log", "a", newline="") as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), currency, rate])
+
+        return float(rate)
     else:
-        print(f"Error: Unable to fetch data (status code: {response.status_code})")
+        raise ValueError(f"Error: Unable to fetch data (status code: {response.status_code})")
 
 
 def cleanup():

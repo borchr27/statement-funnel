@@ -1,9 +1,9 @@
-from program.constants import ALL_TRANSACTIONS, CONFIG
 import os
 import sys
-from program.utils import import_data, format_and_tag_data, review_data
-from datetime import datetime
 import pytest
+from datetime import datetime
+from program.constants import ALL_TRANSACTIONS, CONFIG
+from program.utils import import_data, format_and_tag_data, review_data, get_exchange_rate
 
 WORK_DIR = "./data/testing"
 
@@ -12,9 +12,7 @@ WORK_DIR = "./data/testing"
 @pytest.fixture(scope="function")
 def setup_function():
     file = open(f"{WORK_DIR}/test.csv", "w")
-    file.write(
-        "Account Number,Transaction Date,Transaction Amount,Transaction Type,Transaction Description,Balance\n"
-    )
+    file.write("Account Number,Transaction Date,Transaction Amount,Transaction Type,Transaction Description,Balance\n")
     transactions = [
         "1234,08/25/23,5.00,Debit,test,100.00\n",
         "1234,08/15/23,10.00,Credit,VENMO,810.20\n",
@@ -39,9 +37,9 @@ class TestClass:
             t = ALL_TRANSACTIONS[0].transactions[n]
             amount = -float(data[2]) if data[3] == "Debit" else float(data[2])
             assert t.date == datetime.strptime(data[1], "%m/%d/%y")
-            assert t.bank == "Test Bank"
+            assert t.bank_name == "Test Bank"
             assert t.account.value == "Savings"
-            assert t.amount == amount
+            assert t.amount_account_currency == amount
             assert t.description == data[4]
 
     def test_format_data(self, setup_function, monkeypatch):
@@ -76,13 +74,9 @@ class TestClass:
         input_iterator = iter(input_sequence)  # Create an iterator
 
         def mock_input(prompt):
-            return next(
-                input_iterator
-            )  # Use next() to fetch the next input, ignore prompt
+            return next(input_iterator)  # Use next() to fetch the next input, ignore prompt
 
-        monkeypatch.setattr(
-            "builtins.input", mock_input
-        )  # Replace input with mock_input
+        monkeypatch.setattr("builtins.input", mock_input)  # Replace input with mock_input
 
         # Redirect stdout to suppress output
         sys.stdout = open(os.devnull, "w")
@@ -99,3 +93,9 @@ class TestClass:
     def test_env_file(self):
         """Test that the .env.json file is set up correctly."""
         assert isinstance(CONFIG.accounts[0]["bankName"], str)
+
+    def test_get_exchange_rates(self):
+        """Test that the exchange rates are fetched correctly."""
+        currency_code = CONFIG.accounts[0]["ormInformation"]["currencyCode"]
+        assert currency_code == "EUR"
+        assert isinstance(get_exchange_rate(currency_code, True), float)

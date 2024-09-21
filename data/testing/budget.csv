@@ -1,1 +1,1 @@
-Date,Bank,Account,Amount,Tag,Description
+date,bank_name,account,amount_account_currency,tag,description,amount_usd,account_currency
