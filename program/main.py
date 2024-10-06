@@ -1,3 +1,7 @@
+import os
+
+os.environ["ENV"] = ".env.json"
+
 import signal
 from program.utils import (
     import_data,

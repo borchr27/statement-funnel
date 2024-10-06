@@ -1,5 +1,5 @@
 from program.transaction_class import Transaction
-from program.transaction_class import NewTag
+from program.transaction_class import Tags
 from typing import TypeVar
 from program.constants import CONFIG
 
@@ -11,7 +11,7 @@ def check_description(t: Transaction):
     description = t.description
     if "ATM " in description:
         t.description = "cash"
-        t.tag = NewTag.misc
+        t.tag = Tags.misc
         return
 
     if " VENMO " in description:
@@ -37,15 +37,15 @@ def check_description(t: Transaction):
     return
 
 
-def determine_tag(t: Transaction) -> NewTag:
+def determine_tag(t: Transaction) -> Tags:
     """Find tag for transaction based on description."""
     print(f"{t.date.strftime('%m/%d/%y')} -- {t.amount_account_currency} -- {t.description}")
     return get_tag()
 
 
-def get_tag() -> NewTag:
+def get_tag() -> Tags:
     """Get tag from the user. User only needs to enter first letter."""
-    tag_dict = {tag.name[0]: tag for tag in NewTag}
+    tag_dict = {tag.name[0]: tag for tag in Tags}
     while True:
         user_tag = input("\tEnter tag: ")
         if user_tag in tag_dict.keys() and user_tag not in [None, ""]:

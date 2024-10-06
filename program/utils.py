@@ -6,7 +6,7 @@ from datetime import datetime
 import requests
 from ai.model import BertTextClassifier
 from program.transaction_class import AccountInformation, Transaction
-from program.constants import ALL_TRANSACTIONS, CONFIG, NewTag
+from program.constants import ALL_TRANSACTIONS, CONFIG, Tags
 from program.helper_functions import (
     check_description,
     get_tag,
@@ -70,7 +70,7 @@ def import_data(directory: str) -> None:
                         debit = float(row["Debit"]) if row["Debit"] else 0.0
                         credit = float(row["Credit"]) if row["Credit"] else 0.0
                         amount = credit if credit != 0.0 else -debit
-                    if ap["amount"] == "Transaction Amount":  # For account id 1
+                    elif ap["amount"] == "Transaction Amount":  # For account id 1
                         amount = (
                             float(row[ap["amount"]])
                             if row[ap["transactionType"]] == "Credit"
@@ -105,7 +105,7 @@ def format_and_tag_data() -> None:
         predictions = model.predict(features)
         assert len(transactions) == len(predictions), "Length mismatch between transactions and predictions."
         for transaction, prediction in zip(transactions, predictions):
-            transaction.tag = NewTag(prediction)
+            transaction.tag = Tags(prediction)
             check_description(transaction)
 
 
@@ -149,7 +149,7 @@ def review_data() -> None:
                 )
 
                 if response.lower() == "y":
-                    item.tag = NewTag(tag)
+                    item.tag = Tags(tag)
                     item.description = desc
                 else:
                     print("Item discarded.")
@@ -192,6 +192,9 @@ def check_for_duplicate_column_names(csv_reader: csv.DictReader) -> None:
 
 def get_exchange_rate(currency: str = "CZK", is_test: bool = False) -> float:
     """Check if the currency is in the exchange_usd_rate_history.log file and is not older than x days."""
+    if currency == "USD":
+        return 1.0
+
     days = 3 if is_test else 1
     try:
         with open("exchange_usd_rate_history.log", "r") as file:

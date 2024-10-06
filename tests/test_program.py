@@ -1,4 +1,7 @@
 import os
+
+os.environ["ENV"] = ".env_test.json"
+
 import sys
 import pytest
 from datetime import datetime
