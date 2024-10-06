@@ -45,7 +45,7 @@ def import_data(directory: str) -> None:
             delimiter = ap["delimiter"]
             csv_reader = csv.DictReader(file, delimiter=delimiter)
 
-            check_for_duplicate_column_names(csv_reader)
+            check_for_duplicate_column_names(file_name, csv_reader)
 
             for row in csv_reader:
                 try:
@@ -109,40 +109,52 @@ def format_and_tag_data() -> None:
             check_description(transaction)
 
 
-def show_all_transactions(transactions: list) -> None:
-    for n, item in enumerate(transactions):
-        if item.tag:
-            print(
-                f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t {item.tag.name} \t {item.description}'
-            )
-        else:
-            print_info_message(
-                f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t NULL \t {item.description}'
-            )
+def show_paged_transactions(transactions: list, current_page=0) -> int:
+    page_size = 15  # Number of items to show per page
+    total_transactions = len(transactions)
+
+    while current_page * page_size < total_transactions:
+        start_index = current_page * page_size
+        end_index = start_index + page_size
+        for n, item in enumerate(transactions[start_index:end_index], start=start_index):
+            if item.tag:
+                print(
+                    f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t {item.tag.name} \t {item.description}'
+                )
+            else:
+                print(
+                    f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t NULL \t {item.description}'
+                )
+
+        return current_page + 1
 
 
 def review_data() -> None:
     """Display the budget items to the user for review and allow them to edit the items."""
     for account in ALL_TRANSACTIONS.keys():
         transactions = ALL_TRANSACTIONS[account].transactions
-        show_all_transactions(transactions)
+        show_paged_transactions(transactions)
+        page = 0
         while True:
-            item_number = input("Enter item number to edit (enter to continue): ").strip()
-            if item_number in ["", None]:
+            user_input = input("Enter item number to edit, q to quit, or n for next items: ").strip()
+            if user_input in ["q", "Q"]:
                 break
+            elif user_input in ["n", "N"]:
+                page += 1
+                show_paged_transactions(transactions, page)
             else:
                 try:
-                    item_number = int(item_number)
+                    user_input = int(user_input)
                 except ValueError:
                     print_warning_message("Invalid input. Please enter a number.")
                     continue
-                item = transactions[item_number]
+                item = transactions[user_input]
                 print(
                     f'{item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.tag.value} \t {item.account.value} \t {item.description}'
                 )
                 tag = get_tag()
                 desc = input("\tEnter description: ")
-                response = input(f"Is item {item_number} correct? Type 'Y' to save or any character to discard.")
+                response = input(f"Is item {user_input} correct? Type 'Y' to save or any character to discard.")
                 desc = desc if desc not in ["", None] else item.description
                 print(
                     f'{item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {tag.value} \t {item.account.value} \t {desc}'
@@ -153,10 +165,6 @@ def review_data() -> None:
                     item.description = desc
                 else:
                     print("Item discarded.")
-
-                show_transactions = input("Show all transactions? (Y/N): ")
-                if show_transactions.lower() == "y":
-                    show_all_transactions(transactions)
 
 
 def insert_data_to_file(directory: str) -> None:
@@ -182,12 +190,12 @@ def insert_data_to_file(directory: str) -> None:
                     )
 
 
-def check_for_duplicate_column_names(csv_reader: csv.DictReader) -> None:
+def check_for_duplicate_column_names(file_name, csv_reader: csv.DictReader) -> None:
     """Check for duplicate column names in the CSV file."""
     column_names = csv_reader.fieldnames
     duplicates = [column for column in set(column_names) if column_names.count(column) > 1]
     if duplicates:
-        raise ValueError(f"Duplicate column names found: {duplicates}")
+        raise ValueError(f"Duplicate column names found: {duplicates} in file: {file_name}")
 
 
 def get_exchange_rate(currency: str = "CZK", is_test: bool = False) -> float:

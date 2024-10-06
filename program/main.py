@@ -30,3 +30,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # TODO retrain model
+    # TODO add category into description for one dataset
+    # TODO add sorting at end of adding data
+    # TODO fix failing test that manually inputs / changes data
