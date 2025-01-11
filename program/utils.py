@@ -90,7 +90,7 @@ def import_data(directory: str) -> None:
                         account_currency=currency_code,
                         bank_name=bank,
                         account=account_name,
-                        amount_usd=round(amount / get_exchange_rate(currency_code), 2),
+                        amount_usd=round(amount / get_exchange_rate(currency_code, is_test=bank), 2),
                     )
                 )
         ALL_TRANSACTIONS[account_id] = current_account
@@ -198,12 +198,12 @@ def check_for_duplicate_column_names(file_name, csv_reader: csv.DictReader) -> N
         raise ValueError(f"Duplicate column names found: {duplicates} in file: {file_name}")
 
 
-def get_exchange_rate(currency: str = "CZK", is_test: bool = False) -> float:
+def get_exchange_rate(currency: str = "CZK", is_test: str = "Test Bank") -> float:
     """Check if the currency is in the exchange_usd_rate_history.log file and is not older than x days."""
     if currency == "USD":
         return 1.0
 
-    days = 3 if is_test else 1
+    days = 180 if is_test == "Test Bank" else 1
     try:
         with open("exchange_usd_rate_history.log", "r") as file:
             csv_reader = csv.reader(file)

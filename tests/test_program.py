@@ -65,14 +65,15 @@ class TestClass:
     def test_review_data(self, setup_function, monkeypatch):
         # Define an input value
         input_sequence = [
-            "m",
-            "m",
             "0",
             "f",
+            "",
+            "y",
+            "1",
+            "m",
             "test_description",
             "y",
-            "n",
-            "",
+            "q",
         ]
         input_iterator = iter(input_sequence)  # Create an iterator
 
@@ -99,6 +100,7 @@ class TestClass:
 
     def test_get_exchange_rates(self):
         """Test that the exchange rates are fetched correctly."""
-        currency_code = CONFIG.accounts[0]["ormInformation"]["currencyCode"]
-        assert currency_code == "EUR"
-        assert isinstance(get_exchange_rate(currency_code, True), float)
+        if CONFIG.exchangeRateApiKey != "":
+            currency_code = CONFIG.accounts[0]["ormInformation"]["currencyCode"]
+            assert currency_code == "EUR"
+            assert isinstance(get_exchange_rate(currency_code), float)
