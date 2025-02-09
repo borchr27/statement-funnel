@@ -6,3 +6,4 @@ __pycache__/
 *processed/
 .env.json
 private/
+private/already_added/

@@ -20,6 +20,12 @@ class Tags(Enum):
     food = 4
     rent = 5
 
+N_CLASSES = len(Tags)
+N_NUMERICAL_FEATURES = 4 # Year, Month, Day, Amount
+MODEL_SAVE_DIRECTORY = os.path.join(os.getcwd(), "private/saved_model")
+NUMERIC_COLUMNS = ['amount_usd', 'year', 'month', 'day']
+TEXT_COLUMNS = [i for i in range(768)]  # Generates ["0", ..., "767"]
+
 
 class Config:
     def __init__(self, config_data):

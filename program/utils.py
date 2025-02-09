@@ -4,9 +4,12 @@ import os
 from typing import List
 from datetime import datetime
 import requests
-from ai.model import BertTextClassifier
+import torch
+
+from ai.data_loader import preprocess_data
+from ai.neural_network_model import MultimodalModel, MultimodalTrainer
 from program.transaction_class import AccountInformation, Transaction
-from program.constants import ALL_TRANSACTIONS, CONFIG, Tags
+from program.constants import ALL_TRANSACTIONS, CONFIG, Tags, MODEL_SAVE_DIRECTORY, NUMERIC_COLUMNS, TEXT_COLUMNS
 from program.helper_functions import (
     check_description,
     get_tag,
@@ -16,14 +19,14 @@ from program.helper_functions import (
 
 
 def get_file_names(directory: str = "./data") -> List[str]:
-    """Get name of files located in the /data directory."""
+    """Get names of files located in the first-level directory."""
     file_names = [
-        file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file)) and ".csv" in file
+        file for file in os.listdir(directory)
+        if os.path.isfile(os.path.join(directory, file)) and file.endswith(".csv")
     ]
-    try:
+    # Remove "budget.csv" if present
+    if "budget.csv" in file_names:
         file_names.remove("budget.csv")
-    except ValueError:
-        pass
     return file_names
 
 
@@ -95,14 +98,26 @@ def import_data(directory: str) -> None:
                 )
         ALL_TRANSACTIONS[account_id] = current_account
 
+# def format_and_tag_data_old() -> None:
+#     """For each transaction in each account create a budget transaction item."""
+#     for account in ALL_TRANSACTIONS.keys():
+#         transactions = ALL_TRANSACTIONS[account].transactions
+#         features = [f"{t.amount_account_currency} {t.description}" for t in transactions]
+#         model = BertTextClassifier.load("private/saved_model")
+#         assert len(transactions) == len(predictions), "Length mismatch between transactions and predictions."
+#         for transaction, prediction in zip(transactions, predictions):
+#             transaction.tag = Tags(prediction)
+#             check_description(transaction)
 
 def format_and_tag_data() -> None:
     """For each transaction in each account create a budget transaction item."""
     for account in ALL_TRANSACTIONS.keys():
         transactions = ALL_TRANSACTIONS[account].transactions
-        features = [f"{t.amount_account_currency} {t.description}" for t in transactions]
-        model = BertTextClassifier.load("private/saved_model")
-        predictions = model.predict(features)
+        processed_data = preprocess_data(transactions, True)
+        numeric_tensor = torch.Tensor(processed_data[NUMERIC_COLUMNS].values)
+        text_tensor = torch.Tensor(processed_data[TEXT_COLUMNS].values)
+        trainer = MultimodalTrainer.load(MultimodalModel, MODEL_SAVE_DIRECTORY + "/saved_model.pth")
+        predictions = trainer.predict(numeric_tensor,text_tensor).tolist()
         assert len(transactions) == len(predictions), "Length mismatch between transactions and predictions."
         for transaction, prediction in zip(transactions, predictions):
             transaction.tag = Tags(prediction)
@@ -146,6 +161,12 @@ def review_data() -> None:
                 try:
                     user_input = int(user_input)
                 except ValueError:
+                    print_warning_message("Invalid input. Please enter a number.")
+                    continue
+                except IndexError:
+                    print_warning_message("Invalid input. Please enter a value within the range of current items.")
+                    continue
+                except AttributeError:
                     print_warning_message("Invalid input. Please enter a number.")
                     continue
                 item = transactions[user_input]

@@ -16,16 +16,14 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def main():
-    try:
-        # for testing
-        # working_directory = "./data/examples/"
-        working_directory = "./private/"
-        import_data(working_directory)
-        format_and_tag_data()
-        review_data()
-        insert_data_to_file(working_directory)
-    except Exception as e:
-        print(e)
+    # for testing
+    # working_directory = "./data/examples/"
+    working_directory = "./private/"
+    import_data(working_directory)
+    format_and_tag_data()
+    review_data()
+    insert_data_to_file(working_directory)
+
 
 
 if __name__ == "__main__":

@@ -48,11 +48,13 @@ def get_tag() -> Tags:
     tag_dict = {tag.name[0]: tag for tag in Tags}
     while True:
         user_tag = input("\tEnter tag: ")
-        if user_tag in tag_dict.keys() and user_tag not in [None, ""]:
-            return tag_dict[user_tag]
-        else:
+        try:
+            if user_tag in tag_dict.keys() and user_tag not in [None, ""]:
+                return tag_dict[user_tag]
+            else:
+                print_warning_message("Invalid tag, try again.")
+        except ValueError:
             print_warning_message("Invalid tag, try again.")
-
 
 def print_warning_message(message: str) -> None:
     """Display warning message in red to the user."""

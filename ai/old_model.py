@@ -1,6 +1,7 @@
 import torch
-from transformers import BertTokenizer, BertForSequenceClassification
 from torch import optim
+from transformers import BertForSequenceClassification
+from transformers import BertTokenizer
 
 
 class BertTextClassifier:

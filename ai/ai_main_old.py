@@ -4,15 +4,13 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import torch
 from sklearn.metrics import confusion_matrix
-
 
 os.environ["ENV"] = ".env.json"
 
-from ai.neural_network_model import MultimodalModel, MultimodalTrainer
-from ai.data_loader import load_data, split_data, create_dataloader
-from program.constants import Tags, MODEL_SAVE_DIRECTORY, NUMERIC_COLUMNS, TEXT_COLUMNS
+from ai.data_loader import load_data, preprocess_data, split_data, create_dataloaders
+from ai.old_model import BertTextClassifier
+from program.constants import Tags
 
 parser = argparse.ArgumentParser(description="Process some flags.")
 parser.add_argument("-b", "--build", action="store_true", help="Rebuild the model from scratch.")
@@ -21,48 +19,54 @@ args = parser.parse_args()
 
 
 def main():
+    save_directory = os.path.join(os.getcwd(), "private/saved_model")
     file_path = os.path.join(os.getcwd(), "private/budget.csv")
-    id_to_label = {e.value: e.name for e in Tags}
 
     # Load and preprocess data
-    data = load_data(file_path, is_rebuild_bert_embds=False)
-    train_features, test_features, train_labels, test_labels = split_data(data.drop(columns='label'), data['label'])
+    data = load_data(file_path)
+    features, labels, label_to_id = preprocess_data(data)
+    train_features, test_features, train_labels, test_labels = split_data(features, labels)
 
+    for tag, label in zip(Tags, label_to_id.items()):
+        assert tag.name == label[0], f"Tag name mismatch: {tag.name} != {label[0]}"
+        assert tag.value == label[1], f"Tag value mismatch: {tag.value} != {label[1]}"
+    print("Tags are matched.")
+
+    # Initialize model if you want to train from scratch else load the model
+    num_labels = len(label_to_id)
     if args.build:
-        train_data = pd.concat([train_features, train_labels], axis = 1)
-        test_data = pd.concat([test_features, test_labels], axis = 1)
-        train_dataloader = create_dataloader(train_data, NUMERIC_COLUMNS, TEXT_COLUMNS, 'label', batch_size=32)
-        test_dataloader = create_dataloader(test_data, NUMERIC_COLUMNS, TEXT_COLUMNS, 'label', batch_size=32)
-        model = MultimodalModel()
-        trainer = MultimodalTrainer(model=model, train_loader=train_dataloader, test_loader=test_dataloader, num_epochs=100)
+        model = BertTextClassifier(num_labels)
+        # Create dataloaders
+        train_dataloader, test_dataloader = create_dataloaders(
+            train_features, train_labels, test_features, test_labels, model.tokenize_data
+        )
+        # Train the model
+        model.train(train_dataloader, epochs=18)
 
-        trainer.train()
-        trainer.evaluate()
-        trainer.save(MODEL_SAVE_DIRECTORY + "/saved_model.pth")
+        # Save the model
+        model.save(save_directory)
+        print(f"Model saved to {save_directory}")
 
         # Get predictions
-        y_true = test_labels.tolist()
-        test_numeric_tensor = torch.tensor(test_data[NUMERIC_COLUMNS].values, dtype=torch.float32)
-        test_text_tensor = torch.tensor(test_data[TEXT_COLUMNS].values, dtype=torch.float32)
-        y_pred = trainer.predict(test_numeric_tensor, test_text_tensor).tolist()
+        y_true = test_labels
+        y_pred = model.predict(test_features)
 
         # Convert IDs back to label names
+        id_to_label = {v: k for k, v in label_to_id.items()}
         y_true_labels = [id_to_label[y] for y in y_true]
         y_pred_labels = [id_to_label[y] for y in y_pred]
 
         # Compute confusion matrix
-        plot_confusion_matrix(y_true_labels, y_pred_labels, list(id_to_label.values()))
+        plot_confusion_matrix(y_true_labels, y_pred_labels, list(label_to_id.keys()))
 
         # Show mislabeled examples
         view_mislabeled_samples(test_features, y_true_labels, y_pred_labels)
 
     elif args.predict:
-        trainer = MultimodalTrainer.load(MultimodalModel, MODEL_SAVE_DIRECTORY + "/saved_model.pth")
-        test_numeric_tensor = torch.tensor(test_features[NUMERIC_COLUMNS].values, dtype=torch.float32)
-        test_text_tensor = torch.tensor(test_features[TEXT_COLUMNS].values, dtype=torch.float32)
-        y_pred = trainer.predict(test_numeric_tensor,test_text_tensor).tolist()
-        y_pred = [id_to_label[y] for y in y_pred]
-        print(y_pred[:10])
+        model = BertTextClassifier.load("private/saved_model")
+        predictions = model.predict(train_features)
+        predicted_labels = [list(label_to_id.keys())[list(label_to_id.values()).index(pred)] for pred in predictions]
+        print(predicted_labels)
     else:
         print("Please provide a flag to either build or predict the model.")
 
@@ -85,9 +89,9 @@ def plot_confusion_matrix(y_true, y_pred, label_names):
 def view_mislabeled_samples(features, y_true_labels, y_pred_labels):
     """Print out mislabeled test samples."""
     mislabeled_indices = [i for i in range(len(y_true_labels)) if y_true_labels[i] != y_pred_labels[i]]
-    features = features[['amount_usd', 'year', 'month', 'day', 'description']]
+
     mislabeled_data = pd.DataFrame({
-        "Text": [features.iloc[i].to_dict() for i in mislabeled_indices],
+        "Text": [features[i] for i in mislabeled_indices],
         "True Label": [y_true_labels[i] for i in mislabeled_indices],
         "Predicted Label": [y_pred_labels[i] for i in mislabeled_indices]
     })
