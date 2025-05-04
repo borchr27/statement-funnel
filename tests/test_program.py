@@ -1,12 +1,14 @@
 import os
 
+from program.collection_class import Collection
+
 os.environ["ENV"] = ".env_test.json"
 
 import sys
 import pytest
 from datetime import datetime
-from program.constants import ALL_TRANSACTIONS, CONFIG
-from program.utils import import_data, format_and_tag_data, review_data, get_exchange_rate
+from program.constants import CONFIG
+from program.utils import get_exchange_rate
 
 WORK_DIR = "./data/testing"
 
@@ -33,11 +35,12 @@ def setup_function():
 class TestClass:
     def test_import(self, setup_function):
         """Test creating a checking transaction class from data."""
-        import_data(WORK_DIR)
+        collection = Collection()
+        collection.import_data(WORK_DIR)
         for n, transaction in enumerate(setup_function):
             s = transaction.replace("\n", "")  # string
             data = s.split(",")  # array
-            t = ALL_TRANSACTIONS[0].transactions[n]
+            t = collection.transactions[n]
             amount = -float(data[2]) if data[3] == "Debit" else float(data[2])
             assert t.date == datetime.strptime(data[1], "%m/%d/%y")
             assert t.bank_name == "Test Bank"
@@ -54,13 +57,13 @@ class TestClass:
         monkeypatch.setattr("builtins.input", lambda _: input_value)
         # Redirect stdout to suppress output
         sys.stdout = open(os.devnull, "w")
-
-        import_data(WORK_DIR)
-        format_and_tag_data()
-        assert ALL_TRANSACTIONS[0].transactions[0].tag.name == "misc"
-        assert ALL_TRANSACTIONS[0].transactions[1].tag.name == "misc"
+        collection = Collection()
+        collection.import_data(WORK_DIR)
+        collection.format_and_tag_data()
+        assert collection.transactions[0].tag.name == "misc"
+        assert collection.transactions[1].tag.name == "out"
         with pytest.raises(IndexError):
-            var = ALL_TRANSACTIONS[0].transactions[2].tag.name
+            var = collection.transactions[2].tag.name
 
     def test_review_data(self, setup_function, monkeypatch):
         # Define an input value
@@ -86,13 +89,14 @@ class TestClass:
         sys.stdout = open(os.devnull, "w")
         # Use monkeypatch.setattr to replace the input() function
         # with a function that returns values from the input_sequence
-        import_data(WORK_DIR)
-        format_and_tag_data()
-        review_data()
-        assert ALL_TRANSACTIONS[0].transactions[0].tag.name == "food"
-        assert ALL_TRANSACTIONS[0].transactions[1].tag.name == "misc"
+        collection = Collection()
+        collection.import_data(WORK_DIR)
+        collection.format_and_tag_data()
+        collection.review_data()
+        assert collection.transactions[0].tag.name == "food"
+        assert collection.transactions[1].tag.name == "misc"
         with pytest.raises(IndexError):
-            var = ALL_TRANSACTIONS[0].transactions[2].tag.name
+            var = collection.transactions[2].tag.name
 
     def test_env_file(self):
         """Test that the .env.json file is set up correctly."""

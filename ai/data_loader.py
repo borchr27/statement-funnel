@@ -1,13 +1,10 @@
-from typing import List
-
 import pandas as pd
+import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
-import torch
 
 from ai.bert_embedding_model import BertEmbeddings
-from program.constants import Tags
-from program.transaction_class import Transaction
+from program.constants import SECRETS_DIR, Tags
 
 
 class BudgetDataset(Dataset):
@@ -47,8 +44,30 @@ class MultimodalDataset(Dataset):
 def load_data(file_path, is_rebuild_bert_embds: bool =False):
     """Load CSV data and extract year, month, and, day from the date column."""
     data = pd.read_csv(file_path, usecols=['date', 'description', 'amount_usd', 'tag'])
-    return preprocess_data(data, is_rebuild_bert_embds)
 
+    return preprocess_historical_data(data, is_rebuild_bert_embds)
+
+
+def preprocess_historical_data(data, is_rebuild_bert_embds: bool = False):
+    """Preprocess data by extracting year, month, and day from the date column. Also, fill NaN values in the description column with empty strings."""
+    print("Preprocessing data...")
+    data['date'] = pd.to_datetime(data['date'])
+    data[['year', 'month', 'day']] = data['date'].apply(lambda x: pd.Series([x.year, x.month, x.day, ]))
+    data['description'] = data['description'].fillna('')
+    try:
+        data['label'] = data['tag'].map(lambda x: Tags[x].value)
+    except KeyError:
+        print("No tag column found. Skipping label assignment.")
+    embedder = BertEmbeddings()
+    if is_rebuild_bert_embds:
+        embeddings = embedder.get_bert_embedding(data['description'].tolist(), pooling='cls')
+        embedder.save_embedding(data['description'].tolist(), f"{SECRETS_DIR}/private/saved_model/embeddings.npy", pooling='cls')
+    else:
+        embeddings = embedder.load_embedding(
+            f"{SECRETS_DIR}/private/saved_model/embeddings.npy")
+    data.drop(columns=['tag', 'date'], inplace=True)
+    print("Data preprocessing complete.")
+    return pd.concat([data, pd.DataFrame(embeddings)], axis=1)
 
 def preprocess_data_old(data, is_prediction_data=False):
     labels, label_to_id = None, None
@@ -61,28 +80,6 @@ def preprocess_data_old(data, is_prediction_data=False):
     amounts = data['amount_usd'].tolist()
     features = [f'{amount} {desc}' for desc, amount in zip(descriptions, amounts)]
     return features, labels, label_to_id
-
-def preprocess_data(data, is_rebuild_bert_embds: bool = False):
-    """Preprocess data by extracting year, month, and day from the date column. Also, fill NaN values in the description column with empty strings."""
-    print("Preprocessing data...")
-    if isinstance(data, List):
-        data = Transaction.to_dataframe(data)
-    data['date'] = pd.to_datetime(data['date'])
-    data[['year', 'month', 'day']] = data['date'].apply(lambda x: pd.Series([x.year, x.month, x.day,]))
-    data['description'] = data['description'].fillna('')
-    try:
-        data['label'] = data['tag'].map(lambda x: Tags[x].value)
-    except KeyError:
-        print("No tag column found. Skipping label assignment.")
-    embedder = BertEmbeddings()
-    if is_rebuild_bert_embds:
-        embeddings = embedder.get_bert_embedding(data['description'].tolist(), pooling='cls')
-        # embedder.save_embedding(data['description'].tolist(), 'private/saved_model/embeddings.npy', pooling='cls')
-    else:
-        embeddings = embedder.load_embedding('private/saved_model/embeddings.npy')
-    data.drop(columns=['tag', 'date'], inplace=True)
-    print("Data preprocessing complete.")
-    return pd.concat([data, pd.DataFrame(embeddings)], axis=1)
 
 
 def split_data(X, y, test_size=0.2):

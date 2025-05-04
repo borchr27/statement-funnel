@@ -13,13 +13,16 @@ T = TypeVar("T")
 
 @dataclass
 class Transaction:
+    _instance = None
     account: Account
+    account_id: int
     account_currency: str
     amount_account_currency: float
     amount_usd: float
     bank_name: str
     date: datetime
     description: str
+    origin_file_name: str
     tag: Optional[Tags] = None
 
     def __post_init__(self):
@@ -47,8 +50,3 @@ class Transaction:
         """Convert a list of Transaction objects into a Pandas DataFrame"""
         return pd.DataFrame([t.to_dict() for t in transactions])
 
-
-@dataclass
-class AccountInformation:
-    origin_file_name: str
-    transactions: List[Transaction]

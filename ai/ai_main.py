@@ -12,7 +12,7 @@ os.environ["ENV"] = ".env.json"
 
 from ai.neural_network_model import MultimodalModel, MultimodalTrainer
 from ai.data_loader import load_data, split_data, create_dataloader
-from program.constants import Tags, MODEL_SAVE_DIRECTORY, NUMERIC_COLUMNS, TEXT_COLUMNS
+from program.constants import Tags, MODEL_SAVE_DIRECTORY, NUMERIC_COLUMNS, TEXT_COLUMNS, SECRETS_DIR
 
 parser = argparse.ArgumentParser(description="Process some flags.")
 parser.add_argument("-b", "--build", action="store_true", help="Rebuild the model from scratch.")
@@ -21,11 +21,12 @@ args = parser.parse_args()
 
 
 def main():
-    file_path = os.path.join(os.getcwd(), "private/budget.csv")
+    # file_path = os.path.join(os.getcwd(), "private/budget.csv")
+    file_path = f"{SECRETS_DIR}/private/budget.csv"
     id_to_label = {e.value: e.name for e in Tags}
 
     # Load and preprocess data
-    data = load_data(file_path, is_rebuild_bert_embds=False)
+    data = load_data(file_path, is_rebuild_bert_embds=True)
     train_features, test_features, train_labels, test_labels = split_data(data.drop(columns='label'), data['label'])
 
     if args.build:
@@ -75,7 +76,7 @@ def plot_confusion_matrix(y_true, y_pred, label_names):
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
     plt.title("Confusion Matrix")
-    plt.savefig("private/saved_model/confusion_matrix.png")
+    plt.savefig(f"{SECRETS_DIR}/private/saved_model/confusion_matrix.png")
 
     # save to file
     # df_cm = pd.DataFrame(cm, index=label_names, columns=label_names)
@@ -92,7 +93,7 @@ def view_mislabeled_samples(features, y_true_labels, y_pred_labels):
         "Predicted Label": [y_pred_labels[i] for i in mislabeled_indices]
     })
     # save to file
-    mislabeled_data.to_csv("private/saved_model/mislabeled_samples.csv", index=False)
+    mislabeled_data.to_csv(f"{SECRETS_DIR}/private/saved_model/mislabeled_samples.csv", index=False)
 
 if __name__ == "__main__":
     main()

@@ -1,13 +1,12 @@
 import os
 
+from program.collection_class import Collection
+from program.constants import SECRETS_DIR
+
 os.environ["ENV"] = ".env.json"
 
 import signal
 from program.utils import (
-    import_data,
-    format_and_tag_data,
-    review_data,
-    insert_data_to_file,
     signal_handler,
 )
 
@@ -18,11 +17,12 @@ signal.signal(signal.SIGINT, signal_handler)
 def main():
     # for testing
     # working_directory = "./data/examples/"
-    working_directory = "./private/"
-    import_data(working_directory)
-    format_and_tag_data()
-    review_data()
-    insert_data_to_file(working_directory)
+    collection = Collection()
+    working_directory = f"{SECRETS_DIR}/private/"
+    collection.import_data(working_directory)
+    collection.format_and_tag_data()
+    collection.review_data()
+    collection.insert_data_to_file(working_directory)
 
 
 

@@ -15,6 +15,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from typing import Tuple
 
+# Comment this out when training or predicting with GPU
+import torch
+torch.set_float32_matmul_precision('high')  # Optional for better performance
+torch._dynamo.config.suppress_errors = True  # Disables compiler requirements
+
 class MultimodalModel(nn.Module):
     def __init__(self, numeric_input_dim=N_NUMERICAL_FEATURES, text_input_dim=768, hidden_dim=128, output_dim=N_CLASSES):
         super().__init__()
