@@ -41,14 +41,14 @@ class MultimodalDataset(Dataset):
         return self.numeric_data[idx], self.text_data[idx], self.labels[idx]
 
 
-def load_data(file_path, is_rebuild_bert_embds: bool =False):
+def load_data(file_path, is_rebuild_bert_embds: bool=False):
     """Load CSV data and extract year, month, and, day from the date column."""
-    data = pd.read_csv(file_path, usecols=['date', 'description', 'amount_usd', 'tag'])
+    data = pd.read_csv(file_path, usecols=['date', 'description', 'amount_usd', 'tag'], sep=',', quotechar='"')
 
-    return preprocess_historical_data(data, is_rebuild_bert_embds)
+    return preprocess_historical_data(data, is_rebuild_bert_embds, True)
 
 
-def preprocess_historical_data(data, is_rebuild_bert_embds: bool = False):
+def preprocess_historical_data(data, is_rebuild_bert_embds: bool = False, is_train: bool = False):
     """Preprocess data by extracting year, month, and day from the date column. Also, fill NaN values in the description column with empty strings."""
     print("Preprocessing data...")
     data['date'] = pd.to_datetime(data['date'])
@@ -61,7 +61,8 @@ def preprocess_historical_data(data, is_rebuild_bert_embds: bool = False):
     embedder = BertEmbeddings()
     if is_rebuild_bert_embds:
         embeddings = embedder.get_bert_embedding(data['description'].tolist(), pooling='cls')
-        embedder.save_embedding(data['description'].tolist(), f"{SECRETS_DIR}/private/saved_model/embeddings.npy", pooling='cls')
+        if is_train:
+            embedder.save_embedding(data['description'].tolist(), f"{SECRETS_DIR}/private/saved_model/embeddings.npy", pooling='cls')
     else:
         embeddings = embedder.load_embedding(
             f"{SECRETS_DIR}/private/saved_model/embeddings.npy")

@@ -1,5 +1,5 @@
 import os
-from enum import Enum
+from enum import Enum, auto
 import json
 
 CONFIG_FILE = os.getenv("ENV")
@@ -12,12 +12,23 @@ class Account(Enum):
 
 
 class Tags(Enum):
-    misc = 0
-    pay = 1
-    out = 2
-    gas = 3
-    food = 4
-    rent = 5
+    def _generate_next_value_(name, start, count, last_values):
+        return count
+
+    clothes = auto()
+    education = auto()
+    event = auto()
+    food = auto()
+    health = auto()
+    housing = auto()
+    income = auto()
+    insurance = auto()
+    misc = auto()
+    out = auto()
+    transport = auto()
+    utilities = auto()
+    vacation = auto()
+
 
 N_CLASSES = len(Tags)
 N_NUMERICAL_FEATURES = 4 # Year, Month, Day, Amount

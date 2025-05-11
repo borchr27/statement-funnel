@@ -7,6 +7,7 @@ import pandas as pd
 from sympy.printing.pytorch import torch
 
 from ai.bert_embedding_model import BertEmbeddings
+from ai.data_loader import preprocess_historical_data
 from ai.neural_network_model import MultimodalTrainer, MultimodalModel
 from program.constants import CONFIG, Tags, NUMERIC_COLUMNS, TEXT_COLUMNS, MODEL_SAVE_DIRECTORY, SECRETS_DIR
 from program.helper_functions import print_warning_message, check_description, get_tag
@@ -97,32 +98,10 @@ class Collection:
                     )
         return
 
-    def preprocess_data(self, is_rebuild_bert_embds: bool = False):
-        """Preprocess data by extracting year, month, and day from the date column. Also, fill NaN values in the description column with empty strings."""
-        print("Preprocessing data...")
-        data = self.to_dataframe()
-        data['date'] = pd.to_datetime(data['date'])
-        data[['year', 'month', 'day']] = data['date'].apply(lambda x: pd.Series([x.year, x.month, x.day, ]))
-        data['description'] = data['description'].fillna('')
-        try:
-            data['label'] = data['tag'].map(lambda x: Tags[x].value)
-        except KeyError:
-            print("No tag column found. Skipping label assignment.")
-        embedder = BertEmbeddings()
-        if is_rebuild_bert_embds:
-            embeddings = embedder.get_bert_embedding(data['description'].tolist(), pooling='cls')
-            embedder.save_embedding(data['description'].tolist(), f"{SECRETS_DIR}/private/saved_model/embeddings.npy", pooling='cls')
-        else:
-            embeddings = embedder.load_embedding(
-                f"{SECRETS_DIR}/private/saved_model/embeddings.npy")
-        data.drop(columns=['tag', 'date'], inplace=True)
-        print("Data preprocessing complete.")
-        return pd.concat([data, pd.DataFrame(embeddings)], axis=1)
-
 
     def format_and_tag_data(self) -> None:
         """For each transaction in each account create a budget transaction item."""
-        processed_data = self.preprocess_data(True)
+        processed_data = preprocess_historical_data(self.to_dataframe(), True)
         numeric_tensor = torch.Tensor(processed_data[NUMERIC_COLUMNS].values)
         text_tensor = torch.Tensor(processed_data[TEXT_COLUMNS].values)
         trainer = MultimodalTrainer.load(MultimodalModel, MODEL_SAVE_DIRECTORY + "/saved_model.pth")

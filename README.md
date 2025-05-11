@@ -18,3 +18,25 @@ We use Pytest for testing where we have a few simple tests setup to test imports
 -   Create machine learning model to handle the tags
 -   Create a web app to display the results
 -   Add plot and analysis into this model
+
+## Label Structure (not all used)
+
+- Income
+- Fixed Expenses
+  - housing
+  - utilities
+  - insurance
+  - debt payments
+  - subscriptions and memberships
+- Variable Expenses
+  - food
+  - dining
+  - events
+  - health
+  - clothes 
+  - goods
+  - misc
+  - transport
+  - vacation
+  - education
+- Investing (+Saving)
