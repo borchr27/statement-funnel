@@ -14,10 +14,16 @@ We use Pytest for testing where we have a few simple tests setup to test imports
 
 ## To Do
 
+-   Account up to date for 2024 need to finish revolut and all other accounts for 2025
 -   Add tests and debugging flag
--   Create machine learning model to handle the tags
+-   Fix the messy if statements in the data import function
 -   Create a web app to display the results
 -   Add plot and analysis into this model
+-   Connect LLM api for help labelling lo confidence tags
+
+## To Done
+
+-   Create machine learning model to handle the tags
 
 ## Label Structure (not all used)
 

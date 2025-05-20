@@ -51,7 +51,7 @@ class Collection:
                 for row in csv_reader:
                     try:
                         date = datetime.strptime(row[ap["date"]], ap["dateFormat"])
-                        currency_code = ap["currencyCode"]
+                        currency_code = ap["currencyCode"] if ap["currencyCode"] not in [""] else row["Currency"]
                         bank = CONFIG.accounts[account_id]["bankName"]
                         account_name = CONFIG.accounts[account_id]["accountType"].replace(" ", "_")
 
@@ -77,6 +77,10 @@ class Collection:
                                 if row[ap["transactionType"]] == "Credit"
                                 else -float(row[ap["amount"]])
                             )
+                        elif row[ap["transactionType"]] in ["EXCHANGE", "TOPUP"]: # For account id 4
+                            if float(row["Fee"]) == 0.0:
+                                continue
+                            amount = float(row["Fee"])
                         else:
                             amount = float(row[ap["amount"]].replace(",", ".").replace(" ", ""))
 

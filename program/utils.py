@@ -46,15 +46,15 @@ def show_paged_transactions(transactions: list, current_page=0) -> int:
         start_index = current_page * page_size
         end_index = start_index + page_size
         for n, item in enumerate(transactions[start_index:end_index], start=start_index):
-            item_description_link = f'https://www.google.com/search?q={item.description.replace(" ", "+")}'
-            item_link = link(item_description_link)
+            # item_description_link = f'https://www.google.com/search?q={item.description.replace(" ", "+")}'
+            # item_link = link(item_description_link)
             if item.tag:
                 print(
-                    f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t {item.tag.name} \t {item.description} \t {item_link}'
+                    f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t {item.tag.name} \t {item.description}'
                 )
             else:
                 print(
-                    f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t NULL \t {item_link}'
+                    f'{n} \t {item.amount_account_currency:10.2f} \t\t {item.date.strftime("%m/%d/%y")} \t {item.bank_name} \t {item.account.value} \t'
                 )
 
         return current_page + 1
